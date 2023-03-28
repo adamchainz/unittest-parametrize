@@ -234,3 +234,43 @@ I created unittest-parametrize as a smaller alternative to *parameterized*, with
    This unification of spelling with pytest should help reduce confusion around the extra “e”.
 
 Thanks to the creators and maintainers of ddt, parameterized, and pytest for their hard work.
+
+Why not subtests?
+-----------------
+
+|TestCase.subTest()|__ is unittest’s built-in “parametrization” solution.
+You use it in a loop within a single test method:
+
+.. |TestCase.subTest()| replace:: ``TestCase.subTest()``
+__ https://docs.python.org/3/library/unittest.html#unittest.TestCase.subTest
+
+.. code-block:: python
+
+    from unittest import TestCase
+
+
+    class SquareTests(TestCase):
+        def test_square(self):
+            tests = [
+                (1, 1),
+                (2, 4),
+            ]
+            for x, expected in tests:
+                with self.subTest(x=x):
+                    self.assertEqual(x**2, expected)
+
+This approach crams multiple actual tests into one test method, with several consequences:
+
+* If a subtest fails, it prevents the next subtests from running.
+  Thus, failures are harder to debug, since each test run can only give you partial information.
+
+* Subtests can leak state.
+  Without correct isolation, they may not test what they appear to.
+
+* Subtests cannot be reordered by tools that detect state leakage, like `pytest-randomly <https://github.com/pytest-dev/pytest-randomly>`__.
+
+* Subtests skew test timings, since the test method runs multiple tests.
+
+* Everything is indented two extra levels for the loop and context manager.
+
+Parametrization avoids all these issues by creating individual test methods.
