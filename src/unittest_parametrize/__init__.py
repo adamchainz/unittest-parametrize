@@ -74,7 +74,7 @@ TestFunc = Callable[P, T]
 
 @overload
 def parametrize(
-    argnames: Sequence[str],
+    argnames: str | Sequence[str],
     argvalues: Sequence[tuple[Any, ...]],
     ids: Sequence[str] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:  # pragma: no cover
@@ -83,7 +83,7 @@ def parametrize(
 
 @overload
 def parametrize(
-    argnames: Sequence[str],
+    argnames: str | Sequence[str],
     argvalues: Sequence[param],
     ids: None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:  # pragma: no cover
@@ -91,11 +91,12 @@ def parametrize(
 
 
 def parametrize(
-    argnames: Sequence[str],
+    argnames: str | Sequence[str],
     argvalues: Sequence[tuple[Any, ...]] | Sequence[param],
     ids: Sequence[str] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    # TODO support comma-separated string for argnames
+    if isinstance(argnames, str):
+        argnames = argnames.split(",")
 
     if len(argnames) == 0:
         raise ValueError("argnames must contain at least one element")

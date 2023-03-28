@@ -49,9 +49,41 @@ There are two steps to parametrize a test case:
 
 1. Use ``ParametrizedTestCase`` in the base classes for your test case.
 2. Apply ``@parametrize`` to any tests for parametrization.
-   This decorator takes at least the argument names to parametrize and a list of tuples representing the individual tests.
+   This decorator takes (at least):
+
+   * the argument names to parametrize, as comma-separated string
+   * a list of parameter tuples to create individual tests for
 
 Here’s a basic example:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+``@parametrize`` modifies the class at definition time with Python’s |__init_subclass__ hook|__.
+It removes the original test method and creates wrapped copies with individual names.
+Thus the parametrization should work regardless of the test runner you use (be it unittest, Django’s test runner, pytest, etc.).
+
+.. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
+__ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__
+
+Provide argument names as a string
+----------------------------------
+
+If you need, you can provide argument names as a sequence of strings instead:
 
 .. code-block:: python
 
@@ -69,13 +101,6 @@ Here’s a basic example:
         )
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
-
-``@parametrize`` modifies the class at definition time with Python’s |__init_subclass__ hook|__.
-It removes the original test and creates bound copies with individual names.
-Thus the parametrization should work regardless of the test runner you use (pytest, unittest, etc.).
-
-.. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
-__ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__
 
 Custom test names
 -----------------
@@ -105,7 +130,7 @@ You can customize these names by passing ``param`` objects, which contain the ar
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
-            ("x", "expected"),
+            "x,expected",
             [
                 param(1, 1, id="one"),
                 param(2, 4, id="two"),
@@ -137,7 +162,7 @@ Alternatively, you can provide the id’s separately with the ``ids`` argument:
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
-            ("x", "expected"),
+            "x,expected",
             [
                 (1, 1),
                 (2, 4),

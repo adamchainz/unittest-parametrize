@@ -25,7 +25,7 @@ def test_wrong_length_argnames():
 def test_wrong_length_ids():
     with pytest.raises(ValueError) as excinfo:
         parametrize(
-            ("x",),
+            "x",
             [(1,)],
             ids=[],
         )
@@ -36,7 +36,7 @@ def test_wrong_length_ids():
 def test_wrong_length_tuple():
     with pytest.raises(ValueError) as excinfo:
         parametrize(
-            ("x",),
+            "x",
             [(2, 3)],
         )
 
@@ -49,7 +49,7 @@ def test_wrong_length_tuple():
 def test_wrong_length_param():
     with pytest.raises(ValueError) as excinfo:
         parametrize(
-            ("x",),
+            "x",
             [param(id="one")],
         )
 
@@ -62,7 +62,7 @@ def test_wrong_length_param():
 def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
-            ("x",),
+            "x",
             [{"x": 1}],  # type: ignore[list-item]
         )
 
@@ -76,7 +76,7 @@ def test_wrong_argname():
     with pytest.raises(TypeError) as excinfo:
 
         @parametrize(
-            ("x",),
+            "x",
             [(1,)],
         )
         def test_something(self, y):  # pragma: no cover
@@ -105,6 +105,30 @@ def test_simple_parametrized():
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_square_1")
+
+
+def test_full_argnames():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
             ("x", "expected"),
             [
                 (1, 1),
@@ -129,7 +153,7 @@ def test_custom_ids():
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
-            ("x", "expected"),
+            "x,expected",
             [
                 (1, 1),
                 (2, 4),
@@ -154,7 +178,7 @@ def test_param_instances():
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
-            ("x", "expected"),
+            "x,expected",
             [
                 param(1, 1, id="one"),
                 param(2, 4, id="two"),
@@ -179,7 +203,7 @@ def test_zero_parametrized():
     ran = False
 
     class NoTests(ParametrizedTestCase):
-        @parametrize(("x"), [])
+        @parametrize("x", [])
         def test_never_runs(self, x: int) -> None:  # pragma: no cover
             nonlocal ran
             ran = True
