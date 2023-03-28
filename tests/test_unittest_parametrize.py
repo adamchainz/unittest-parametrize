@@ -105,6 +105,25 @@ def test_duplicate_param_ids():
     assert excinfo.value.args[0] == "Duplicate param id 'a'"
 
 
+def test_duplicate_test_name():
+    with pytest.raises(ValueError) as excinfo:
+
+        class VanillaTest(ParametrizedTestCase):
+            @parametrize(
+                "x",
+                [(1,)],
+            )
+            def test_something(self, x):  # pragma: no cover
+                pass
+
+            def test_something_0(self):  # pragma: no cover
+                pass
+
+    assert (
+        excinfo.value.args[0] == "Duplicate test name test_something_0 in VanillaTest"
+    )
+
+
 def test_vanilla():
     # Non-parametrized tests work as usual
     ran = False

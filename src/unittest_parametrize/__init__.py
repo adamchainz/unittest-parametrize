@@ -49,6 +49,11 @@ class ParametrizedTestCase(TestCase):
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
 
+                if hasattr(cls, test.__name__):
+                    raise ValueError(
+                        f"Duplicate test name {test.__name__} in {cls.__name__}"
+                    )
+
                 setattr(cls, test.__name__, test)
 
 
