@@ -92,6 +92,19 @@ def test_param_invalid_id():
     assert excinfo.value.args[0] == "id must be a valid Python identifier suffix: '!'"
 
 
+def test_duplicate_param_ids():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            "x",
+            [
+                param(1, id="a"),
+                param(1, id="a"),
+            ],
+        )
+
+    assert excinfo.value.args[0] == "Duplicate param id 'a'"
+
+
 def test_vanilla():
     # Non-parametrized tests work as usual
     ran = False
