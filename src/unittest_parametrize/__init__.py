@@ -28,8 +28,13 @@ class ParametrizedTestCase(TestCase):
             if not hasattr(func, "_parametrized"):
                 continue
 
-            # TODO: check through decorator chain, if there's a decorator above
-            # @parametrize, error
+            if hasattr(func, "__wrapped__") and hasattr(
+                func.__wrapped__, "_parametrized"
+            ):
+                raise TypeError(
+                    "@parametrize must be the top-most decorator on "
+                    + func.__qualname__
+                )
 
             _parametrized = func._parametrized  # type: ignore [attr-defined]
             delattr(cls, name)
@@ -150,6 +155,9 @@ def parametrize(
         # Check given argnames will work
         sig = inspect.signature(func)
         sig.bind_partial(**bind_kwargs)
+
+        if hasattr(func, "_parametrized"):
+            raise TypeError(f"@parametrize cannot be stacked on {func.__qualname__}")
 
         func._parametrized = _parametrized  # type: ignore [attr-defined]
         return func
