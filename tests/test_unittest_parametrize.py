@@ -85,6 +85,13 @@ def test_wrong_argname():
     assert excinfo.value.args[0] == "got an unexpected keyword argument 'x'"
 
 
+def test_param_invalid_id():
+    with pytest.raises(ValueError) as excinfo:
+        param(id="!")
+
+    assert excinfo.value.args[0] == "id must be a valid Python identifier suffix: '!'"
+
+
 def test_vanilla():
     # Non-parametrized tests work as usual
     ran = False

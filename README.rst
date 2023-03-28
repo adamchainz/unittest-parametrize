@@ -102,8 +102,8 @@ If you need, you can provide argument names as a sequence of strings instead:
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
 
-Custom test names
------------------
+Custom test name suffixes
+-------------------------
 
 By default, test names are extended with an index, starting at zero.
 You can see these names when running the tests:
@@ -151,6 +151,8 @@ Yielding perhaps more natural names:
     Ran 2 tests in 0.000s
 
     OK
+
+Parameter IDs should be valid Python identifier suffixes.
 
 Alternatively, you can provide the id’s separately with the ``ids`` argument:
 

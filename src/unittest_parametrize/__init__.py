@@ -57,7 +57,8 @@ class param:
 
     def __init__(self, *args: Any, id: str) -> None:
         self.args = args
-        # TODO: escape id as ASCII as per pytest
+        if not f"_{id}".isidentifier():
+            raise ValueError(f"id must be a valid Python identifier suffix: {id!r}")
         self.id = id
 
 
