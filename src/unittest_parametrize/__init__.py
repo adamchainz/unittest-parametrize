@@ -63,6 +63,8 @@ class param:
 
 
 class parametrized:
+    __slots__ = ("argnames", "params")
+
     def __init__(self, argnames: Sequence[str], params: Sequence[param]) -> None:
         self.argnames = argnames
         self.params = params
@@ -105,6 +107,7 @@ def parametrize(
     if ids is not None and len(ids) != len(argvalues):
         raise ValueError("ids must have the same length as argvalues")
 
+    seen_ids = set()
     params = []
     for i, argvalue in enumerate(argvalues):
         if isinstance(argvalue, tuple):
@@ -124,6 +127,10 @@ def parametrize(
                     f"param at index {i} has wrong number of arguments "
                     + f"({len(argvalue.args)} != {len(argnames)})"
                 )
+
+            if argvalue.id in seen_ids:
+                raise ValueError(f"Duplicate param id {argvalue.id!r}")
+            seen_ids.add(argvalue.id)
             params.append(argvalue)
 
         else:
