@@ -174,6 +174,61 @@ Alternatively, you can provide the id’s separately with the ``ids`` argument:
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
 
+Use with other test decorators
+------------------------------
+
+``@parametrize`` tries to ensure it is the top-most (outermost) decorator.
+This limitation exists to ensure that the decorator applies to each test.
+So decorators like ``@mock.patch.object`` need be beneath ``@parametrize``:
+
+.. code-block:: python
+
+    from unittest import mock
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class MockingTests(ParametrizedTestCase):
+        @parametrize(
+            "nails",
+            [(1,), (2,)],
+        )
+        @mock.patch.object(board, "length", new=9001)
+        def test_boarding(self, nails):
+            ...
+
+Multiple ``@parametrize`` decorators
+------------------------------------
+
+``@parametrize`` is not stackable.
+To create a cross-product of tests, use |itertools.product()|__:
+
+.. |itertools.product()| replace:: ``itertools.product()``
+__ https://docs.python.org/3/library/itertools.html#itertools.product
+
+.. code-block:: python
+
+    from itertools import product
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class RocketTests(ParametrizedTestCase):
+        @parametrize(
+            "use_ions,hyperdrive_level,nose_colour",
+            list(
+                product(
+                    [True, False],
+                    [0, 1, 2],
+                    ["red", "yellow"],
+                )
+            ),
+        )
+        def test_takeoff(self, use_ions, hyperdrive_level, nose_colour) -> None:
+            ...
+
+The above creates 2 * 3 * 2 = 12 versions of ``test_takeoff``.
+
 Use ``ParametrizedTestCase`` in your base test case class
 ---------------------------------------------------------
 

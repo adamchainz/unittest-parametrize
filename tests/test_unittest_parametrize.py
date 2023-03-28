@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 import pytest
 
@@ -121,6 +123,43 @@ def test_duplicate_test_name():
 
     assert (
         excinfo.value.args[0] == "Duplicate test name test_something_0 in VanillaTest"
+    )
+
+
+def test_no_decorators_above_parametrize():
+    obj = SimpleNamespace(x=1)
+
+    with pytest.raises(TypeError) as excinfo:
+
+        class SomethingTests(ParametrizedTestCase):
+            @mock.patch.object(obj, "x", new=2)
+            @parametrize(
+                "y",
+                [(1,)],
+            )
+            def test_something(self, y):  # pragma: no cover
+                pass
+
+    assert (
+        excinfo.value.args[0]
+        == "@parametrize must be the top-most decorator on"
+        + " test_no_decorators_above_parametrize.<locals>.SomethingTests.test_something"
+    )
+
+
+def test_only_one_parametrize():
+    with pytest.raises(TypeError) as excinfo:
+
+        class SomethingTests(ParametrizedTestCase):
+            @parametrize("x", [(1,)])
+            @parametrize("y", [(2,)])
+            def test_something(self, x, y):  # pragma: no cover
+                pass
+
+    assert (
+        excinfo.value.args[0]
+        == "@parametrize cannot be stacked on"
+        + " test_only_one_parametrize.<locals>.SomethingTests.test_something"
     )
 
 
