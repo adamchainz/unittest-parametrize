@@ -38,13 +38,172 @@ Check out my book `Speed Up Your Django Tests <https://adamchainz.gumroad.com/l/
 Usage
 =====
 
-TODO
+The API mirrors |@pytest.mark.parametrize|__ as much as possible.
+(Even the name `parametrize <https://en.wiktionary.org/wiki/parametrize#English>`__ over the slightly more common `parameterize <https://en.wiktionary.org/wiki/parameterize#English>`__ with an extra “e”.
+Don’t get caught out by that…)
+
+.. |@pytest.mark.parametrize| replace:: ``@pytest.mark.parametrize``
+__ https://docs.pytest.org/en/stable/how-to/parametrize.html#parametrize-basics
+
+There are two steps to parametrize a test case:
+
+1. Use ``ParametrizedTestCase`` in the base classes for your test case.
+2. Apply ``@parametrize`` to any tests for parametrization.
+   This decorator takes at least the argument names to parametrize and a list of tuples representing the individual tests.
+
+Here’s a basic example:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            ("x", "expected"),
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+``@parametrize`` modifies the class at definition time with Python’s |__init_subclass__ hook|__.
+It removes the original test and creates bound copies with individual names.
+Thus the parametrization should work regardless of the test runner you use (pytest, unittest, etc.).
+
+.. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
+__ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__
+
+Custom test names
+-----------------
+
+By default, test names are extended with an index, starting at zero.
+You can see these names when running the tests:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_0 (t.SquareTests.test_square_0) ... ok
+    test_square_1 (t.SquareTests.test_square_1) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+
+You can customize these names by passing ``param`` objects, which contain the arguments plus an ID for the suffix:
+
+.. code-block:: python
+
+    from unittest_parametrize import param
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            ("x", "expected"),
+            [
+                param(1, 1, id="one"),
+                param(2, 4, id="two"),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+Yielding perhaps more natural names:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_one (t.SquareTests.test_square_one) ... ok
+    test_square_two (t.SquareTests.test_square_two) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+
+Alternatively, you can provide the id’s separately with the ``ids`` argument:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            ("x", "expected"),
+            [
+                (1, 1),
+                (2, 4),
+            ],
+            ids=["one", "two"],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+Use ``ParametrizedTestCase`` in your base test case class
+---------------------------------------------------------
+
+``ParametrizedTestCase`` does nothing if there aren’t any ``@parametrize``-decorated tests within a class.
+Therefore you can include it in your project’s base test case class so that ``@parametrize`` works immediately in all test cases.
+
+For example, within a Django project, you can create a set of project-specific base test case classes extending `those provided by Django <https://docs.djangoproject.com/en/stable/topics/testing/tools/#provided-test-case-classes>`__.
+You can do this in a module like ``example.test``, and use the base classes throughout your test suite.
+To add ``ParametrizedTestCase`` to all your copies, use it in a custom ``SimpleTestCase`` and then mixin to others using multiple inheritance like so:
+
+.. code-block:: python
+
+    from django import test
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SimpleTestCase(ParametrizedTestCase, test.SimpleTestCase):
+        pass
+
+
+    class TestCase(SimpleTestCase, test.TestCase):
+        pass
+
+
+    class TransactionTestCase(SimpleTestCase, test.TransactionTestCase):
+        pass
+
+
+    class LiveServerTestCase(SimpleTestCase, test.LiveServerTestCase):
+        pass
 
 History
 =======
 
-TODO
+When I started writing unit tests, I learned to use `DDT (Data-Driven Tests) <https://ddt.readthedocs.io/en/latest/>`__ for parametrizing tests.
+It works, but the docs are a bit thin, and the API a little obscure (what does ``@ddt`` stand for again?).
 
-* ddt
-* pytest.mark.parametrize
-* parameterized
+Later when picking up pytest, I learned to use its `parametrization API <https://docs.pytest.org/en/stable/how-to/parametrize.html>`__.
+It’s legible and flexible, but it doesn’t work with unittest test cases, which Django’s test tooling provides.
+
+So, until the creation of this package, I was using `parameterized <https://pypi.org/project/parameterized/>`__ on my (Django) test cases.
+This package supports parametrization across multiple test runners, though most of them are “legacy” by now.
+
+I created unittest-parametrize as a smaller alternative to *parameterized*, with these goals:
+
+1. Only support unittest test cases.
+   For other types of test, you can use pytest’s parametrization.
+
+2. Avoid any custom test runner support.
+   Modifying the class at definition time means that all test runners will see the tests the same.
+
+3. Use modern Python features like ``__init_subclass__``.
+
+4. Have full type hint coverage.
+   You shouldn’t find unittest-parametrize a blocker when adopting Mypy with strict mode on.
+
+5. Use the name “parametrize” rather than “parameterize”.
+   This unification of spelling with pytest should help reduce confusion around the extra “e”.
+
+Thanks to the creators and maintainers of ddt, parameterized, and pytest for their hard work.
