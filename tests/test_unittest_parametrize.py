@@ -15,6 +15,13 @@ def run_tests(test_case: type[ParametrizedTestCase]) -> None:
     unittest.TextTestRunner().run(suite)
 
 
+def test_wrong_length_argnames():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize((), [])
+
+    assert excinfo.value.args[0] == "argnames must contain at least one element"
+
+
 def test_wrong_length_ids():
     with pytest.raises(ValueError) as excinfo:
         parametrize(
@@ -24,6 +31,58 @@ def test_wrong_length_ids():
         )
 
     assert excinfo.value.args[0] == "ids must have the same length as argvalues"
+
+
+def test_wrong_length_tuple():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            ("x",),
+            [(2, 3)],
+        )
+
+    assert (
+        excinfo.value.args[0]
+        == "tuple at index 0 has wrong number of arguments (2 != 1)"
+    )
+
+
+def test_wrong_length_param():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            ("x",),
+            [param(id="one")],
+        )
+
+    assert (
+        excinfo.value.args[0]
+        == "param at index 0 has wrong number of arguments (0 != 1)"
+    )
+
+
+def test_wrong_type_argvalues():
+    with pytest.raises(TypeError) as excinfo:
+        parametrize(
+            ("x",),
+            [{"x": 1}],  # type: ignore[list-item]
+        )
+
+    assert (
+        excinfo.value.args[0]
+        == "argvalue at index 0 is not a tuple or param instance: {'x': 1}"
+    )
+
+
+def test_wrong_argname():
+    with pytest.raises(TypeError) as excinfo:
+
+        @parametrize(
+            ("x",),
+            [(1,)],
+        )
+        def test_something(self, y):  # pragma: no cover
+            pass
+
+    assert excinfo.value.args[0] == "got an unexpected keyword argument 'x'"
 
 
 def test_vanilla():
@@ -114,44 +173,19 @@ def test_param_instances():
     assert hasattr(SquareTests, "test_square_two")
 
 
-def test_two_parametrized():
-    # Two parametrized tests within one class
+def test_zero_parametrized():
+    # Zero parametrized tests allowed to make generating tests easier
 
-    ran = 0
+    ran = False
 
-    class HigherPowerTests(ParametrizedTestCase):
-        @parametrize(
-            ("x", "expected"),
-            [
-                (1, 1),
-                (2, 8),
-            ],
-        )
-        def test_cube(self, x: int, expected: int) -> None:
+    class NoTests(ParametrizedTestCase):
+        @parametrize(("x"), [])
+        def test_never_runs(self, x: int) -> None:  # pragma: no cover
             nonlocal ran
-            ran += 1
-            result = x**3
-            self.assertEqual(result, expected)
+            ran = True
 
-        @parametrize(
-            ("x", "expected"),
-            [
-                (1, 1),
-                (2, 16),
-            ],
-        )
-        def test_biquadrate(self, x: int, expected: int) -> None:
-            nonlocal ran
-            ran += 1
-            result = x**4
-            self.assertEqual(result, expected)
+    run_tests(NoTests)
 
-    run_tests(HigherPowerTests)
-
-    assert ran == 4
-    assert not hasattr(HigherPowerTests, "test_cube")
-    assert hasattr(HigherPowerTests, "test_cube_0")
-    assert hasattr(HigherPowerTests, "test_cube_1")
-    assert not hasattr(HigherPowerTests, "test_biquadrate")
-    assert hasattr(HigherPowerTests, "test_biquadrate_0")
-    assert hasattr(HigherPowerTests, "test_biquadrate_1")
+    assert ran is False
+    assert not hasattr(NoTests, "test_never_runs")
+    assert not hasattr(NoTests, "test_never_runs_0")

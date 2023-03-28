@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import sys
 from functools import wraps
 from types import FunctionType
@@ -96,29 +97,46 @@ def parametrize(
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     # TODO support comma-separated string for argnames
 
+    if len(argnames) == 0:
+        raise ValueError("argnames must contain at least one element")
+
     if ids is not None and len(ids) != len(argvalues):
         raise ValueError("ids must have the same length as argvalues")
 
     params = []
     for i, argvalue in enumerate(argvalues):
-        if isinstance(argvalue, param):
-            if len(argvalue.args) != len(argnames):
-                raise ValueError("... mismatched len")
-            params.append(argvalue)
-        elif isinstance(argvalue, tuple):
+        if isinstance(argvalue, tuple):
             if len(argvalue) != len(argnames):
-                raise ValueError("... mismatched len")
+                raise ValueError(
+                    f"tuple at index {i} has wrong number of arguments "
+                    + f"({len(argvalue)} != {len(argnames)})"
+                )
             if ids:
                 id_ = ids[i]
             else:
                 id_ = str(i)
             params.append(param(*argvalue, id=id_))
+        elif isinstance(argvalue, param):
+            if len(argvalue.args) != len(argnames):
+                raise ValueError(
+                    f"param at index {i} has wrong number of arguments "
+                    + f"({len(argvalue.args)} != {len(argnames)})"
+                )
+            params.append(argvalue)
+
         else:
-            raise TypeError("... not a tuple or param")
+            raise TypeError(
+                f"argvalue at index {i} is not a tuple or param instance: {argvalue!r}"
+            )
 
     _parametrized = parametrized(argnames, params)
+    bind_kwargs = {k: None for k in _parametrized.argnames}
 
     def wrapper(func: Callable[P, T]) -> Callable[P, T]:
+        # Check given argnames will work
+        sig = inspect.signature(func)
+        sig.bind_partial(**bind_kwargs)
+
         func._parametrized = _parametrized  # type: ignore [attr-defined]
         return func
 
