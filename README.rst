@@ -31,7 +31,7 @@ Python 3.7 to 3.11 supported.
 ----
 
 **Testing a Django project?**
-Check out my book `Speed Up Your Django Tests <https://adamchainz.gumroad.com/l/suydt>`__ which covers loads of recommendations to write faster, more accurate tests.
+Check out my book `Speed Up Your Django Tests <https://adamchainz.gumroad.com/l/suydt>`__ which covers lots of recommendations to write faster, more accurate tests.
 
 ----
 
