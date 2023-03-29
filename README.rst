@@ -178,8 +178,8 @@ Use with other test decorators
 ------------------------------
 
 ``@parametrize`` tries to ensure it is the top-most (outermost) decorator.
-This limitation exists to ensure that the decorator applies to each test.
-So decorators like ``@mock.patch.object`` need be beneath ``@parametrize``:
+This limitation exists to ensure that other decorators apply to each parametrized test.
+So decorators like ``@mock.patch`` need be beneath ``@parametrize``:
 
 .. code-block:: python
 
@@ -188,14 +188,23 @@ So decorators like ``@mock.patch.object`` need be beneath ``@parametrize``:
     from unittest_parametrize import ParametrizedTestCase
 
 
-    class MockingTests(ParametrizedTestCase):
+    class CarpentryTests(ParametrizedTestCase):
         @parametrize(
             "nails",
-            [(1,), (2,)],
+            [(11,), (17,)],
         )
-        @mock.patch.object(board, "length", new=9001)
-        def test_boarding(self, nails):
+        @mock.patch("example.hammer", autospec=True)
+        def test_nail_a_board(self, mock_hammer, nails):
             ...
+
+Also note that due to how ``mock.patch`` always adds positional arguments at the start, the parametrized arguments must come last.
+``@parametrize`` always adds parameters as keyword arguments, so you can also use `keyword-only syntax <https://peps.python.org/pep-3102/>`__ for parametrized arguments:
+
+.. code-block:: python
+
+    # ...
+    def test_nail_a_board(self, mock_hammer, *, nails):
+        ...
 
 Multiple ``@parametrize`` decorators
 ------------------------------------
