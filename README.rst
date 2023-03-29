@@ -201,7 +201,29 @@ Multiple ``@parametrize`` decorators
 ------------------------------------
 
 ``@parametrize`` is not stackable.
-To create a cross-product of tests, use |itertools.product()|__:
+To create a cross-product of tests, you can use nested list comprehensions:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class RocketTests(ParametrizedTestCase):
+        @parametrize(
+            "use_ions,hyperdrive_level",
+            [
+                (use_ions, hyperdrive_level)
+                for use_ions in [True, False]
+                for hyperdrive_level in [0, 1, 2]
+            ],
+        )
+        def test_takeoff(self, use_ions, hyperdrive_level) -> None:
+            ...
+
+The above creates 2 * 3 = 6 versions of ``test_takeoff``.
+
+For larger combinations, |itertools.product()|__ may be more readable:
 
 .. |itertools.product()| replace:: ``itertools.product()``
 __ https://docs.python.org/3/library/itertools.html#itertools.product
