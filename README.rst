@@ -80,10 +80,10 @@ Thus the parametrization should work regardless of the test runner you use (be i
 .. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
 __ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__
 
-Provide argument names as a string
-----------------------------------
+Provide argument names as separate strings
+------------------------------------------
 
-If you need, you can provide argument names as a sequence of strings instead:
+You can provide argument names as a sequence of strings instead:
 
 .. code-block:: python
 
@@ -101,6 +101,38 @@ If you need, you can provide argument names as a sequence of strings instead:
         )
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
+
+
+Use ``ParametrizedTestCase`` in your base test case class
+---------------------------------------------------------
+
+``ParametrizedTestCase`` does nothing if there aren’t any ``@parametrize``-decorated tests within a class.
+Therefore you can include it in your project’s base test case class so that ``@parametrize`` works immediately in all test cases.
+
+For example, within a Django project, you can create a set of project-specific base test case classes extending `those provided by Django <https://docs.djangoproject.com/en/stable/topics/testing/tools/#provided-test-case-classes>`__.
+You can do this in a module like ``example.test``, and use the base classes throughout your test suite.
+To add ``ParametrizedTestCase`` to all your copies, use it in a custom ``SimpleTestCase`` and then mixin to others using multiple inheritance like so:
+
+.. code-block:: python
+
+    from django import test
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SimpleTestCase(ParametrizedTestCase, test.SimpleTestCase):
+        pass
+
+
+    class TestCase(SimpleTestCase, test.TestCase):
+        pass
+
+
+    class TransactionTestCase(SimpleTestCase, test.TransactionTestCase):
+        pass
+
+
+    class LiveServerTestCase(SimpleTestCase, test.LiveServerTestCase):
+        pass
 
 Custom test name suffixes
 -------------------------
@@ -260,36 +292,34 @@ __ https://docs.python.org/3/library/itertools.html#itertools.product
 
 The above creates 2 * 3 * 2 = 12 versions of ``test_takeoff``.
 
-Use ``ParametrizedTestCase`` in your base test case class
----------------------------------------------------------
+Parametrizing multiple tests in a test case
+-------------------------------------------
 
-``ParametrizedTestCase`` does nothing if there aren’t any ``@parametrize``-decorated tests within a class.
-Therefore you can include it in your project’s base test case class so that ``@parametrize`` works immediately in all test cases.
-
-For example, within a Django project, you can create a set of project-specific base test case classes extending `those provided by Django <https://docs.djangoproject.com/en/stable/topics/testing/tools/#provided-test-case-classes>`__.
-You can do this in a module like ``example.test``, and use the base classes throughout your test suite.
-To add ``ParametrizedTestCase`` to all your copies, use it in a custom ``SimpleTestCase`` and then mixin to others using multiple inheritance like so:
+``@parametrize`` only works as a function decorator, not a class decorator.
+To parametrize all tests within a test case, create a separate decorator and apply it to each method:
 
 .. code-block:: python
 
-    from django import test
+    from unittest_parametrize import parametrize
     from unittest_parametrize import ParametrizedTestCase
 
 
-    class SimpleTestCase(ParametrizedTestCase, test.SimpleTestCase):
-        pass
+    parametrize_race = parametrize(
+        "race",
+        [("Human",), ("Halfling",), ("Dwarf",), ("Elf",)],
+    )
 
 
-    class TestCase(SimpleTestCase, test.TestCase):
-        pass
+    class StatsTests(ParametrizedTestCase):
+        @parametrize_race
+        def test_strength(self, race: str) -> None:
+            ...
 
+        @parametrize_race
+        def test_dexterity(self, race: str) -> None:
+            ...
 
-    class TransactionTestCase(SimpleTestCase, test.TransactionTestCase):
-        pass
-
-
-    class LiveServerTestCase(SimpleTestCase, test.LiveServerTestCase):
-        pass
+        ...
 
 History
 =======
