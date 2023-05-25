@@ -119,7 +119,7 @@ def parametrize(
         raise ValueError("argnames must contain at least one element")
 
     if ids is not None and len(ids) != len(argvalues):
-        # although this might be overriden with param(..., id=...)
+        # although this might be overridden with param(..., id=...)
         raise ValueError("ids must have the same length as argvalues")
 
     seen_ids = set()
