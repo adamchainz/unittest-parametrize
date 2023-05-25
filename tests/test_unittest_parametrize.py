@@ -285,10 +285,7 @@ def test_param_instances_with_or_without_id():
                 param(1, 1),
                 param(2, 4, id="2"),
                 param(3, 9, id="three"),
-                param(
-                    4,
-                    16,
-                ),
+                param(4, 16),
             ],
             ids=["one", "two", None, None],
         )
