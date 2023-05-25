@@ -65,10 +65,14 @@ class ParametrizedTestCase(TestCase):
 class param:
     __slots__ = ("args", "id")
 
-    def __init__(self, *args: Any, id: str) -> None:
+    def __init__(self, *args: Any, id: str | None = None) -> None:
         self.args = args
-        if not f"_{id}".isidentifier():
+
+        if id is not None and not f"_{id}".isidentifier():
             raise ValueError(f"id must be a valid Python identifier suffix: {id!r}")
+
+        # if None, we will retrieve it from the `ids` sequence that can be passed to
+        # parametrize(...), or we will just use the test case index (starting with 0)
         self.id = id
 
 
@@ -115,21 +119,20 @@ def parametrize(
         raise ValueError("argnames must contain at least one element")
 
     if ids is not None and len(ids) != len(argvalues):
+        # although this might be overriden with param(..., id=...)
         raise ValueError("ids must have the same length as argvalues")
 
     seen_ids = set()
     params = []
     for i, argvalue in enumerate(argvalues):
+        id_ = id if ids and (id := ids[i]) else str(i)
+
         if isinstance(argvalue, tuple):
             if len(argvalue) != len(argnames):
                 raise ValueError(
                     f"tuple at index {i} has wrong number of arguments "
                     + f"({len(argvalue)} != {len(argnames)})"
                 )
-            if ids:
-                id_ = ids[i]
-            else:
-                id_ = str(i)
             params.append(param(*argvalue, id=id_))
         elif isinstance(argvalue, param):
             if len(argvalue.args) != len(argnames):
@@ -138,6 +141,8 @@ def parametrize(
                     + f"({len(argvalue.args)} != {len(argnames)})"
                 )
 
+            if argvalue.id is None:
+                argvalue.id = id_
             if argvalue.id in seen_ids:
                 raise ValueError(f"Duplicate param id {argvalue.id!r}")
             seen_ids.add(argvalue.id)
