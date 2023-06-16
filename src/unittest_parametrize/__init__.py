@@ -6,7 +6,6 @@ from functools import wraps
 from types import FunctionType
 from typing import Any
 from typing import Callable
-from typing import overload
 from typing import Sequence
 from typing import TypeVar
 from unittest import TestCase
@@ -65,10 +64,12 @@ class ParametrizedTestCase(TestCase):
 class param:
     __slots__ = ("args", "id")
 
-    def __init__(self, *args: Any, id: str) -> None:
+    def __init__(self, *args: Any, id: str | None = None) -> None:
         self.args = args
-        if not f"_{id}".isidentifier():
+
+        if id is not None and not f"_{id}".isidentifier():
             raise ValueError(f"id must be a valid Python identifier suffix: {id!r}")
+
         self.id = id
 
 
@@ -85,28 +86,10 @@ T = TypeVar("T")
 TestFunc = Callable[P, T]
 
 
-@overload
-def parametrize(
-    argnames: str | Sequence[str],
-    argvalues: Sequence[tuple[Any, ...]],
-    ids: Sequence[str] | None = None,
-) -> Callable[[Callable[P, T]], Callable[P, T]]:  # pragma: no cover
-    ...
-
-
-@overload
-def parametrize(
-    argnames: str | Sequence[str],
-    argvalues: Sequence[param],
-    ids: None = None,
-) -> Callable[[Callable[P, T]], Callable[P, T]]:  # pragma: no cover
-    ...
-
-
 def parametrize(
     argnames: str | Sequence[str],
     argvalues: Sequence[tuple[Any, ...]] | Sequence[param],
-    ids: Sequence[str] | None = None,
+    ids: Sequence[str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
         argnames = argnames.split(",")
@@ -120,16 +103,17 @@ def parametrize(
     seen_ids = set()
     params = []
     for i, argvalue in enumerate(argvalues):
+        if ids and ids[i]:
+            id_ = ids[i]
+        else:
+            id_ = str(i)
+
         if isinstance(argvalue, tuple):
             if len(argvalue) != len(argnames):
                 raise ValueError(
                     f"tuple at index {i} has wrong number of arguments "
                     + f"({len(argvalue)} != {len(argnames)})"
                 )
-            if ids:
-                id_ = ids[i]
-            else:
-                id_ = str(i)
             params.append(param(*argvalue, id=id_))
         elif isinstance(argvalue, param):
             if len(argvalue.args) != len(argnames):
@@ -138,6 +122,8 @@ def parametrize(
                     + f"({len(argvalue.args)} != {len(argnames)})"
                 )
 
+            if argvalue.id is None:
+                argvalue = param(*argvalue.args, id=id_)
             if argvalue.id in seen_ids:
                 raise ValueError(f"Duplicate param id {argvalue.id!r}")
             seen_ids.add(argvalue.id)

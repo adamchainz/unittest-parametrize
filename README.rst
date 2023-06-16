@@ -151,7 +151,7 @@ You can see these names when running the tests:
 
     OK
 
-You can customize these names by passing ``param`` objects, which contain the arguments plus an ID for the suffix:
+You can customize these names by passing ``param`` objects, which contain the arguments and an optional ID for the suffix:
 
 .. code-block:: python
 
@@ -185,6 +185,39 @@ Yielding perhaps more natural names:
     OK
 
 Parameter IDs should be valid Python identifier suffixes.
+
+Since parameter IDs are optional, you can provide them only for some tests:
+
+.. code-block:: python
+
+    from unittest_parametrize import param
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+                param(20, 400, id="large"),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+ID-free ``param``\s fall back to the default index suffixes:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_0 (example.SquareTests.test_square_0) ... ok
+    test_square_large (example.SquareTests.test_square_large) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
 
 Alternatively, you can provide the id’s separately with the ``ids`` argument:
 

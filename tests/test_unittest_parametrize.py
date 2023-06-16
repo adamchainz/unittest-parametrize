@@ -65,7 +65,7 @@ def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
             "x",
-            [{"x": 1}],  # type: ignore[list-item]
+            [{"x": 1}],  # type: ignore[arg-type]
         )
 
     assert (
@@ -102,6 +102,20 @@ def test_duplicate_param_ids():
                 param(1, id="a"),
                 param(1, id="a"),
             ],
+        )
+
+    assert excinfo.value.args[0] == "Duplicate param id 'a'"
+
+
+def test_duplicate_param_ids_mixed():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            "x",
+            [
+                param(1),
+                param(1, id="a"),
+            ],
+            ids=["a", None],
         )
 
     assert excinfo.value.args[0] == "Duplicate param id 'a'"
@@ -273,6 +287,78 @@ def test_param_instances():
     assert not hasattr(SquareTests, "test_square")
     assert hasattr(SquareTests, "test_square_one")
     assert hasattr(SquareTests, "test_square_two")
+
+
+def test_param_instance_with_ids_arg():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+            ],
+            ids=["one"],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 1
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_one")
+
+
+def test_param_instances_without_id():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+                param(20, 400, id="large"),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_square_large")
+
+
+def test_param_instances_reused():
+    ran = 0
+    cases = [param(1, 1)]
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x,expected", cases)
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+        @parametrize("x,expected", cases, ids=["minusone"])
+        def test_negative_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual((-x) ** 2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_negative_square_minusone")
 
 
 def test_zero_parametrized():
