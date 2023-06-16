@@ -65,7 +65,7 @@ def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
             "x",
-            [{"x": 1}],  # type: ignore[list-item]
+            [{"x": 1}],  # type: ignore[arg-type]
         )
 
     assert (
