@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Make ``param.id`` optional.
+
+  Thanks to Adrien Cossa in `PR #20 <https://github.com/adamchainz/unittest-parametrize/pull/20>`__.
+
 1.1.0 (2023-06-13)
 ------------------
 
