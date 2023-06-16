@@ -123,7 +123,7 @@ def parametrize(
                 )
 
             if argvalue.id is None:
-                argvalue.id = id_
+                argvalue = param(*argvalue.args, id=id_)
             if argvalue.id in seen_ids:
                 raise ValueError(f"Duplicate param id {argvalue.id!r}")
             seen_ids.add(argvalue.id)

@@ -336,6 +336,31 @@ def test_param_instances_without_id():
     assert hasattr(SquareTests, "test_square_large")
 
 
+def test_param_instances_reused():
+    ran = 0
+    cases = [param(1, 1)]
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x,expected", cases)
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+        @parametrize("x,expected", cases, ids=["minusone"])
+        def test_negative_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual((-x) ** 2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_negative_square_minusone")
+
+
 def test_zero_parametrized():
     # Zero parametrized tests allowed to make generating tests easier
 
