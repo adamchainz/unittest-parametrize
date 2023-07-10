@@ -26,7 +26,7 @@ Install with:
 
     python -m pip install unittest-parametrize
 
-Python 3.7 to 3.12 supported.
+Python 3.8 to 3.12 supported.
 
 ----
 
