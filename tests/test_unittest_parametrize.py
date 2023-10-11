@@ -87,6 +87,23 @@ def test_wrong_argname():
     assert excinfo.value.args[0] == "got an unexpected keyword argument 'x'"
 
 
+def test_argname_whitespace_ignored():
+    ran = False
+
+    class VanillaTest(ParametrizedTestCase):
+        @parametrize(
+            "x, y",
+            [(1, 2)],
+        )
+        def test_something(self, x, y):
+            nonlocal ran
+            ran = True
+
+    run_tests(VanillaTest)
+
+    assert ran
+
+
 def test_param_invalid_id():
     with pytest.raises(ValueError) as excinfo:
         param(id="!")
