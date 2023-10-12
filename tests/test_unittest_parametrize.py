@@ -216,6 +216,30 @@ def test_simple_parametrized():
     assert hasattr(SquareTests, "test_square_1")
 
 
+def test_argnames_whitespace():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x, expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_square_1")
+
+
 def test_full_argnames():
     ran = 0
 

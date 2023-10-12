@@ -92,7 +92,7 @@ def parametrize(
     ids: Sequence[str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
-        argnames = argnames.split(",")
+        argnames = [a.strip() for a in argnames.split(",")]
 
     if len(argnames) == 0:
         raise ValueError("argnames must contain at least one element")
