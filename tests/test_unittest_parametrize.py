@@ -87,23 +87,6 @@ def test_wrong_argname():
     assert excinfo.value.args[0] == "got an unexpected keyword argument 'x'"
 
 
-def test_argname_whitespace_ignored():
-    ran = False
-
-    class VanillaTest(ParametrizedTestCase):
-        @parametrize(
-            "x, y",
-            [(1, 2)],
-        )
-        def test_something(self, x, y):
-            nonlocal ran
-            ran = True
-
-    run_tests(VanillaTest)
-
-    assert ran
-
-
 def test_param_invalid_id():
     with pytest.raises(ValueError) as excinfo:
         param(id="!")
@@ -215,6 +198,30 @@ def test_simple_parametrized():
     class SquareTests(ParametrizedTestCase):
         @parametrize(
             "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_square_1")
+
+
+def test_argnames_whitespace():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x, expected",
             [
                 (1, 1),
                 (2, 4),
