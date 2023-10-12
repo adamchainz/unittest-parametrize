@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Support whitespace in argument name strings.
+
+  Thanks to Arthur Rio in `PR #47 <https://github.com/adamchainz/unittest-parametrize/pull/47>`__.
+
 1.3.0 (2023-07-10)
 ------------------
 
