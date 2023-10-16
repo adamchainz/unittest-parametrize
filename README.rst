@@ -17,6 +17,13 @@ unittest-parametrize
 
 Parametrize tests within unittest TestCases.
 
+----
+
+**Testing a Django project?**
+Check out my book `Speed Up Your Django Tests <https://adamchainz.gumroad.com/l/suydt>`__ which covers loads of recommendations to write faster, more accurate tests.
+
+----
+
 Installation
 ============
 
@@ -27,13 +34,6 @@ Install with:
     python -m pip install unittest-parametrize
 
 Python 3.8 to 3.12 supported.
-
-----
-
-**Testing a Django project?**
-Check out my book `Speed Up Your Django Tests <https://adamchainz.gumroad.com/l/suydt>`__ which covers loads of recommendations to write faster, more accurate tests.
-
-----
 
 Usage
 =====
