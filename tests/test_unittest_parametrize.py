@@ -6,9 +6,9 @@ from unittest import mock
 
 import pytest
 
+from unittest_parametrize import ParametrizedTestCase
 from unittest_parametrize import param
 from unittest_parametrize import parametrize
-from unittest_parametrize import ParametrizedTestCase
 
 
 def run_tests(test_case: type[ParametrizedTestCase]) -> None:
