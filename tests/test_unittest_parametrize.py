@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 from types import SimpleNamespace
+from unittest import TestResult
 from unittest import mock
 
 import pytest
@@ -11,10 +12,10 @@ from unittest_parametrize import param
 from unittest_parametrize import parametrize
 
 
-def run_tests(test_case: type[ParametrizedTestCase]) -> None:
+def run_tests(test_case: type[ParametrizedTestCase]) -> TestResult:
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromTestCase(test_case)
-    unittest.TextTestRunner().run(suite)
+    return unittest.TextTestRunner().run(suite)
 
 
 def test_wrong_length_argnames():
@@ -401,3 +402,19 @@ def test_zero_parametrized():
     assert ran is False
     assert not hasattr(NoTests, "test_never_runs")
     assert not hasattr(NoTests, "test_never_runs_0")
+
+
+def test_assertion_raised_with_param_info():
+    expected_msg = "test_square failed with params: {'x': 1, 'expected': 2}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x,expected", ((1, 2),))
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x, expected)
+
+    test_result = run_tests(SquareTests)
+
+    assert len(test_result.failures) == 1
+
+    (_, failure_msg) = test_result.failures[0]
+    assert expected_msg in failure_msg
