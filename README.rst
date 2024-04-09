@@ -2,7 +2,7 @@
 unittest-parametrize
 ====================
 
-.. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/unittest-parametrize/main.yml?branch=main&style=for-the-badge
+.. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/unittest-parametrize/main.yml.svg?branch=main&style=for-the-badge
    :target: https://github.com/adamchainz/unittest-parametrize/actions?workflow=CI
 
 .. image:: https://img.shields.io/pypi/v/unittest-parametrize.svg?style=for-the-badge
