@@ -8,12 +8,14 @@ requires = [
 name = "unittest-parametrize"
 version = "1.4.0"
 description = "Parametrize tests within unittest TestCases."
-readme = {file = "README.rst", content-type = "text/x-rst"}
+readme = { file = "README.rst", content-type = "text/x-rst" }
 keywords = [
   "unittest",
 ]
-license = {text = "MIT"}
-authors = [{name = "Adam Johnson", email = "me@adamj.eu"}]
+license = { text = "MIT" }
+authors = [
+  { name = "Adam Johnson", email = "me@adamj.eu" },
+]
 requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -29,16 +31,14 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  'typing-extensions; python_version < "3.10"',
+  "typing-extensions; python_version<'3.10'",
 ]
-[project.urls]
-Changelog = "https://github.com/adamchainz/unittest-parametrize/blob/main/CHANGELOG.rst"
-Funding = "https://adamj.eu/books/"
-Repository = "https://github.com/adamchainz/unittest-parametrize"
-
+urls.Changelog = "https://github.com/adamchainz/unittest-parametrize/blob/main/CHANGELOG.rst"
+urls.Funding = "https://adamj.eu/books/"
+urls.Repository = "https://github.com/adamchainz/unittest-parametrize"
 [tool.isort]
 add_imports = [
-    "from __future__ import annotations"
+  "from __future__ import annotations",
 ]
 force_single_line = true
 profile = "black"
@@ -53,14 +53,14 @@ addopts = """\
 branch = true
 parallel = true
 source = [
-    "unittest_parametrize",
-    "tests",
+  "unittest_parametrize",
+  "tests",
 ]
 
 [tool.coverage.paths]
 source = [
-    "src",
-    ".tox/**/site-packages",
+  "src",
+  ".tox/**/site-packages",
 ]
 
 [tool.coverage.report]
