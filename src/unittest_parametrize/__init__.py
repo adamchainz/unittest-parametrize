@@ -40,6 +40,9 @@ class ParametrizedTestCase(TestCase):
             for param in _parametrized.params:
                 params = dict(zip(_parametrized.argnames, param.args))
 
+                # Close over test name here for usage in the assertion error
+                test_name = name
+
                 @wraps(func)
                 def test(
                     self: TestCase,
@@ -48,7 +51,13 @@ class ParametrizedTestCase(TestCase):
                     _params: dict[str, Any] = params,
                     **kwargs: Any,
                 ) -> Any:
-                    return _func(self, *args, **_params, **kwargs)
+                    try:
+                        return _func(self, *args, **_params, **kwargs)
+                    except AssertionError as e:
+                        # Suppress warning about not closing over test_name
+                        tn = test_name  # noqa: B023
+                        err_msg = f"{tn} failed with params: {_params}"
+                        raise AssertionError(err_msg) from e
 
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
