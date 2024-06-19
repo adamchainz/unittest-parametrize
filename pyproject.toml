@@ -8,11 +8,10 @@ requires = [
 name = "unittest-parametrize"
 version = "1.4.0"
 description = "Parametrize tests within unittest TestCases."
-readme = { file = "README.rst", content-type = "text/x-rst" }
+readme = "README.rst"
 keywords = [
   "unittest",
 ]
-license = { text = "MIT" }
 authors = [
   { name = "Adam Johnson", email = "me@adamj.eu" },
 ]
