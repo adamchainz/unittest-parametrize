@@ -135,7 +135,7 @@ def parametrize(
             )
 
     _parametrized = parametrized(argnames, params)
-    bind_kwargs = {k: None for k in _parametrized.argnames}
+    bind_kwargs = dict.fromkeys(_parametrized.argnames)
 
     def wrapper(func: Callable[P, T]) -> Callable[P, T]:
         # Check given argnames will work
