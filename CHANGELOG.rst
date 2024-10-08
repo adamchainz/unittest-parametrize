@@ -2,6 +2,9 @@
 Changelog
 =========
 
+1.5.0 (2024-10-08)
+------------------
+
 * On Python 3.11+, add `exception notes <https://docs.python.org/3.11/whatsnew/3.11.html#whatsnew311-pep678>`__ xwith parameter values to failures.
   For example, the final line here:
 
