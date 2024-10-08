@@ -33,7 +33,7 @@ Install with:
 
     python -m pip install unittest-parametrize
 
-Python 3.8 to 3.13 supported.
+Python 3.9 to 3.13 supported.
 
 Usage
 =====

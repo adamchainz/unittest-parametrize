@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import inspect
 import sys
+from collections.abc import Sequence
 from functools import wraps
 from types import FunctionType
 from typing import Any
 from typing import Callable
-from typing import Sequence
 from typing import TypeVar
 from unittest import TestCase
 
