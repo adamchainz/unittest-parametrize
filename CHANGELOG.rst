@@ -2,6 +2,25 @@
 Changelog
 =========
 
+* On Python 3.11+, add `exception notes <https://docs.python.org/3.11/whatsnew/3.11.html#whatsnew311-pep678>`__ xwith parameter values to failures.
+  For example, the final line here:
+
+  .. code-block:: console
+
+    $ python -m unittest example
+    F
+    ======================================================================
+    FAIL: test_square_0 (example.SquareTests.test_square_0)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      File "/.../unittest_parametrize/__init__.py", line 52, in test
+        return _func(self, *args, **_params, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/.../example.py", line 11, in test_square
+        self.assertEqual(x**2, expected)
+    AssertionError: 1 != 2
+    Test parameters: x=1, expected=2
+
 * Drop Python 3.8 support.
 
 * Support Python 3.13.

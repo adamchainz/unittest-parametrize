@@ -48,7 +48,15 @@ class ParametrizedTestCase(TestCase):
                     _params: dict[str, Any] = params,
                     **kwargs: Any,
                 ) -> Any:
-                    return _func(self, *args, **_params, **kwargs)
+                    try:
+                        return _func(self, *args, **_params, **kwargs)
+                    except Exception as exc:
+                        if sys.version_info >= (3, 11):
+                            exc.add_note(
+                                "Test parameters: "
+                                + ", ".join(f"{k}={v!r}" for k, v in _params.items())
+                            )
+                        raise
 
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
