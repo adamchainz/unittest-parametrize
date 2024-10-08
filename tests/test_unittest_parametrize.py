@@ -194,7 +194,6 @@ def test_vanilla():
     assert ran
 
 
-@pytest.mark.skipif(sys.version_info < (3, 11), reason="Python 3.11+")
 def test_simple_parametrized_failure_has_note():
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -207,9 +206,10 @@ def test_simple_parametrized_failure_has_note():
     result = run_tests(SquareTests)
 
     assert len(result.failures) == 1
-    failure = result.failures[0]
-    *_, message = failure
-    assert message.endswith("\nTest parameters: x=1, expected=2\n")
+    if sys.version_info >= (3, 11):
+        failure = result.failures[0]
+        *_, message = failure
+        assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
 def test_simple_parametrized():
