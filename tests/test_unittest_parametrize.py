@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import unittest
 from types import SimpleNamespace
 from unittest import mock
@@ -11,10 +12,11 @@ from unittest_parametrize import param
 from unittest_parametrize import parametrize
 
 
-def run_tests(test_case: type[ParametrizedTestCase]) -> None:
+def run_tests(test_case: type[ParametrizedTestCase]) -> unittest.TestResult:
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromTestCase(test_case)
-    unittest.TextTestRunner().run(suite)
+    runner = unittest.TextTestRunner()
+    return runner.run(suite)
 
 
 def test_wrong_length_argnames():
@@ -190,6 +192,24 @@ def test_vanilla():
     run_tests(VanillaTest)
 
     assert ran
+
+
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Python 3.11+")
+def test_simple_parametrized_failure_has_note():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [(1, 2)],
+        )
+        def test_square(self, x, expected):
+            self.assertEqual(x**2, expected)
+
+    result = run_tests(SquareTests)
+
+    assert len(result.failures) == 1
+    failure = result.failures[0]
+    *_, message = failure
+    assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
 def test_simple_parametrized():
