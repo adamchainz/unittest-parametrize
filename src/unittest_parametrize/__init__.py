@@ -66,7 +66,17 @@ class ParametrizedTestCase(TestCase):
                         f"Duplicate test name {test.__name__} in {cls.__name__}"
                     )
 
-                setattr(cls, test.__name__, test)
+                if inspect.iscoroutinefunction(func):
+
+                    @wraps(test)
+                    async def test_async(
+                        self: TestCase, *args: Any, **kwargs: Any
+                    ) -> Any:
+                        return await test(self, *args, **kwargs)
+
+                    setattr(cls, test.__name__, test_async)
+                else:
+                    setattr(cls, test.__name__, test)
 
 
 class param:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from types import SimpleNamespace
+from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
 import pytest
@@ -421,3 +422,19 @@ def test_zero_parametrized():
     assert ran is False
     assert not hasattr(NoTests, "test_never_runs")
     assert not hasattr(NoTests, "test_never_runs_0")
+
+
+def test_isolated_asyncio_test_case() -> None:
+    ran = 0
+
+    class AsyncTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
+        @parametrize("x", [(0,), (1,)])
+        async def test_x(self, x: int) -> None:
+            nonlocal ran
+            ran += 1
+
+    run_tests(AsyncTests)
+
+    assert ran == 2
+    assert hasattr(AsyncTests, "test_x_0")
+    assert hasattr(AsyncTests, "test_x_1")
