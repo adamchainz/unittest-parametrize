@@ -48,7 +48,7 @@ __ https://docs.pytest.org/en/stable/how-to/parametrize.html#parametrize-basics
 There are two steps to parametrize a test case:
 
 1. Use ``ParametrizedTestCase`` in the base classes for your test case.
-2. Apply ``@parametrize`` to any tests for parametrization.
+2. Apply ``@parametrize`` to any test methods for parametrization.
    This decorator takes (at least):
 
    * the argument names to parametrize, as comma-separated string
@@ -76,6 +76,7 @@ Here’s a basic example:
 ``@parametrize`` modifies the class at definition time with Python’s |__init_subclass__ hook|__.
 It removes the original test method and creates wrapped copies with individual names.
 Thus the parametrization should work regardless of the test runner you use (be it unittest, Django’s test runner, pytest, etc.).
+It supports both synchronous and asynchronous test methods.
 
 .. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
 __ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__

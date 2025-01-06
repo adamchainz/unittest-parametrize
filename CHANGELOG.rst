@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Add suport for asynchronous tests.
+
+  Thanks to Adrien Cossa in `PR #121 <https://github.com/adamchainz/unittest-parametrize/pull/121>`__.
+
 1.5.0 (2024-10-08)
 ------------------
 
