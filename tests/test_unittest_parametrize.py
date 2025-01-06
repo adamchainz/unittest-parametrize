@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 import unittest
 from types import SimpleNamespace
+from unittest import IsolatedAsyncioTestCase
 from unittest import mock
 
 import pytest
@@ -212,6 +214,25 @@ def test_simple_parametrized_failure_has_note():
         assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
+def test_simple_parametrized_async_failure_has_note():
+    class SquareTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
+        @parametrize(
+            "x,expected",
+            [(1, 2)],
+        )
+        async def test_square(self, x, expected):
+            await asyncio.sleep(0.001)
+            self.assertEqual(x**2, expected)
+
+    result = run_tests(SquareTests)
+
+    assert len(result.failures) == 1
+    if sys.version_info >= (3, 11):
+        failure = result.failures[0]
+        *_, message = failure
+        assert message.endswith("\nTest parameters: x=1, expected=2\n")
+
+
 def test_simple_parametrized():
     ran = 0
 
@@ -226,6 +247,31 @@ def test_simple_parametrized():
         def test_square(self, x: int, expected: int) -> None:
             nonlocal ran
             ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_0")
+    assert hasattr(SquareTests, "test_square_1")
+
+
+def test_simple_parametrized_async():
+    ran = 0
+
+    class SquareTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+        )
+        async def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            await asyncio.sleep(0.001)
             self.assertEqual(x**2, expected)
 
     run_tests(SquareTests)
@@ -421,3 +467,20 @@ def test_zero_parametrized():
     assert ran is False
     assert not hasattr(NoTests, "test_never_runs")
     assert not hasattr(NoTests, "test_never_runs_0")
+
+
+def test_async_tests() -> None:
+    ran = 0
+
+    class AsyncTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
+        @parametrize("x", [(0,), (1,)])
+        async def test_x(self, x: int) -> None:
+            nonlocal ran
+            ran += 1
+            await asyncio.sleep(0.001)
+
+    run_tests(AsyncTests)
+
+    assert ran == 2
+    assert hasattr(AsyncTests, "test_x_0")
+    assert hasattr(AsyncTests, "test_x_1")

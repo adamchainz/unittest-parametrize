@@ -40,23 +40,49 @@ class ParametrizedTestCase(TestCase):
             for param in _parametrized.params:
                 params = dict(zip(_parametrized.argnames, param.args))
 
-                @wraps(func)
-                def test(
-                    self: TestCase,
-                    *args: Any,
-                    _func: FunctionType = func,
-                    _params: dict[str, Any] = params,
-                    **kwargs: Any,
-                ) -> Any:
-                    try:
-                        return _func(self, *args, **_params, **kwargs)
-                    except Exception as exc:
-                        if sys.version_info >= (3, 11):
-                            exc.add_note(
-                                "Test parameters: "
-                                + ", ".join(f"{k}={v!r}" for k, v in _params.items())
-                            )
-                        raise
+                if inspect.iscoroutinefunction(func):
+
+                    @wraps(func)
+                    async def test(
+                        self: TestCase,
+                        *args: Any,
+                        _func: FunctionType = func,
+                        _params: dict[str, Any] = params,
+                        **kwargs: Any,
+                    ) -> Any:
+                        try:
+                            return await _func(self, *args, **_params, **kwargs)
+                        except Exception as exc:
+                            if sys.version_info >= (3, 11):
+                                exc.add_note(
+                                    "Test parameters: "
+                                    + ", ".join(
+                                        f"{k}={v!r}" for k, v in _params.items()
+                                    )
+                                )
+                            raise
+
+                else:
+
+                    @wraps(func)
+                    def test(
+                        self: TestCase,
+                        *args: Any,
+                        _func: FunctionType = func,
+                        _params: dict[str, Any] = params,
+                        **kwargs: Any,
+                    ) -> Any:
+                        try:
+                            return _func(self, *args, **_params, **kwargs)
+                        except Exception as exc:
+                            if sys.version_info >= (3, 11):
+                                exc.add_note(
+                                    "Test parameters: "
+                                    + ", ".join(
+                                        f"{k}={v!r}" for k, v in _params.items()
+                                    )
+                                )
+                            raise
 
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
