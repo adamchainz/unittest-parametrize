@@ -260,8 +260,7 @@ So decorators like ``@mock.patch`` need be beneath ``@parametrize``:
             [(11,), (17,)],
         )
         @mock.patch("example.hammer", autospec=True)
-        def test_nail_a_board(self, mock_hammer, nails):
-            ...
+        def test_nail_a_board(self, mock_hammer, nails): ...
 
 Also note that due to how ``mock.patch`` always adds positional arguments at the start, the parametrized arguments must come last.
 ``@parametrize`` always adds parameters as keyword arguments, so you can also use `keyword-only syntax <https://peps.python.org/pep-3102/>`__ for parametrized arguments:
@@ -269,8 +268,7 @@ Also note that due to how ``mock.patch`` always adds positional arguments at the
 .. code-block:: python
 
     # ...
-    def test_nail_a_board(self, mock_hammer, *, nails):
-        ...
+    def test_nail_a_board(self, mock_hammer, *, nails): ...
 
 Multiple ``@parametrize`` decorators
 ------------------------------------
@@ -293,8 +291,7 @@ To create a cross-product of tests, you can use nested list comprehensions:
                 for hyperdrive_level in [0, 1, 2]
             ],
         )
-        def test_takeoff(self, use_ions, hyperdrive_level) -> None:
-            ...
+        def test_takeoff(self, use_ions, hyperdrive_level) -> None: ...
 
 The above creates 2 * 3 = 6 versions of ``test_takeoff``.
 
@@ -321,8 +318,7 @@ __ https://docs.python.org/3/library/itertools.html#itertools.product
                 )
             ),
         )
-        def test_takeoff(self, use_ions, hyperdrive_level, nose_colour) -> None:
-            ...
+        def test_takeoff(self, use_ions, hyperdrive_level, nose_colour) -> None: ...
 
 The above creates 2 * 3 * 2 = 12 versions of ``test_takeoff``.
 
@@ -346,12 +342,10 @@ To parametrize all tests within a test case, create a separate decorator and app
 
     class StatsTests(ParametrizedTestCase):
         @parametrize_race
-        def test_strength(self, race: str) -> None:
-            ...
+        def test_strength(self, race: str) -> None: ...
 
         @parametrize_race
-        def test_dexterity(self, race: str) -> None:
-            ...
+        def test_dexterity(self, race: str) -> None: ...
 
         ...
 
