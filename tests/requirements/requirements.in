@@ -1,4 +1,0 @@
-coverage[toml]
-pytest
-pytest-randomly
-typing-extensions;python_version < "3.10"
