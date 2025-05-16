@@ -5,7 +5,7 @@ Changelog
 1.6.0 (2025-01-06)
 ------------------
 
-* Add suport for asynchronous tests.
+* Add support for asynchronous tests.
 
   Thanks to Adrien Cossa in `PR #121 <https://github.com/adamchainz/unittest-parametrize/pull/121>`__.
 
