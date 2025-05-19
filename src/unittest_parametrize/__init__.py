@@ -5,9 +5,7 @@ import sys
 from collections.abc import Sequence
 from functools import wraps
 from types import FunctionType
-from typing import Any
-from typing import Callable
-from typing import TypeVar
+from typing import Any, Callable, TypeVar
 from unittest import TestCase
 
 if sys.version_info >= (3, 10):
