@@ -4,14 +4,11 @@ import asyncio
 import sys
 import unittest
 from types import SimpleNamespace
-from unittest import IsolatedAsyncioTestCase
-from unittest import mock
+from unittest import IsolatedAsyncioTestCase, mock
 
 import pytest
 
-from unittest_parametrize import ParametrizedTestCase
-from unittest_parametrize import param
-from unittest_parametrize import parametrize
+from unittest_parametrize import ParametrizedTestCase, param, parametrize
 
 
 def run_tests(test_case: type[ParametrizedTestCase]) -> unittest.TestResult:
