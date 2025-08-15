@@ -121,7 +121,7 @@ TestFunc = Callable[P, T]
 def parametrize(
     argnames: str | Sequence[str],
     argvalues: Sequence[tuple[Any, ...]] | Sequence[param],
-    ids: Sequence[str | None] | None = None,
+    ids: Sequence[str | None] | Callable[..., str] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
         argnames = [a.strip() for a in argnames.split(",")]
@@ -129,14 +129,31 @@ def parametrize(
     if len(argnames) == 0:
         raise ValueError("argnames must contain at least one element")
 
-    if ids is not None and len(ids) != len(argvalues):
+    # Handle callable vs sequence ids
+    ids_callable = callable(ids)
+    if ids is not None and not ids_callable and len(ids) != len(argvalues):  # type: ignore[arg-type]
         raise ValueError("ids must have the same length as argvalues")
 
     seen_ids = set()
     params = []
     for i, argvalue in enumerate(argvalues):
-        if ids and ids[i]:
-            id_ = ids[i]
+        if ids_callable:
+            # Get the actual parameter values to pass to the callable
+            if isinstance(argvalue, tuple):
+                values = argvalue
+            elif isinstance(argvalue, param):
+                values = argvalue.args
+            else:
+                raise TypeError(
+                    f"argvalue at index {i} is not a tuple or param instance: {argvalue!r}"
+                )
+            assert callable(ids)  # Type narrowing for mypy
+            id_ = ids(*values)
+            # Validate the generated ID
+            if not f"_{id_}".isidentifier():
+                raise ValueError(f"callable ids returned invalid Python identifier suffix: {id_!r}")
+        elif ids and ids[i]:  # type: ignore[index]
+            id_ = str(ids[i])  # type: ignore[index]
         else:
             id_ = str(i)
 

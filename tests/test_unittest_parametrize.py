@@ -481,3 +481,103 @@ def test_async_tests() -> None:
     assert ran == 2
     assert hasattr(AsyncTests, "test_x_0")
     assert hasattr(AsyncTests, "test_x_1")
+
+
+def test_callable_ids():
+    ran = 0
+
+    def make_id(x, expected):
+        return f"x{x}_exp{expected}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+                (3, 9),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 3
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_x1_exp1")
+    assert hasattr(SquareTests, "test_square_x2_exp4")
+    assert hasattr(SquareTests, "test_square_x3_exp9")
+
+
+def test_callable_ids_with_param_instances():
+    ran = 0
+
+    def make_id(x, expected):
+        return f"value_{x}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+                param(2, 4),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_value_1")
+    assert hasattr(SquareTests, "test_square_value_2")
+
+
+def test_callable_ids_invalid_identifier():
+    def bad_id(x, expected):
+        return "!"  # Invalid identifier
+
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            "x,expected",
+            [(1, 1)],
+            ids=bad_id,
+        )
+
+    assert excinfo.value.args[0] == "callable ids returned invalid Python identifier suffix: '!'"
+
+
+def test_callable_ids_with_mixed_param_instances():
+    ran = 0
+
+    def make_id(x, expected):
+        return f"calc_{x}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),  # Will use callable ID
+                param(2, 4, id="explicit"),  # Has explicit ID, should use it
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_calc_1")  # From callable
+    assert hasattr(SquareTests, "test_square_explicit")  # From explicit ID
