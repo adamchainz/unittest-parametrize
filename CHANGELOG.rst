@@ -2,6 +2,11 @@
 Changelog
 =========
 
+1.7.0 (unreleased)
+------------------
+
+* Add support for callable ``ids`` parameter to ``@parametrize``. The function is called once per parameter value and can return a string for that value or None to use the default.
+
 1.6.0 (2025-01-06)
 ------------------
 

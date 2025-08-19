@@ -121,7 +121,7 @@ TestFunc = Callable[P, T]
 def parametrize(
     argnames: str | Sequence[str],
     argvalues: Sequence[tuple[Any, ...]] | Sequence[param],
-    ids: Sequence[str | None] | Callable[..., str] | None = None,
+    ids: Sequence[str | None] | Callable[[Any], str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
         argnames = [a.strip() for a in argnames.split(",")]
@@ -148,7 +148,15 @@ def parametrize(
                     f"argvalue at index {i} is not a tuple or param instance: {argvalue!r}"
                 )
             assert callable(ids)  # Type narrowing for mypy
-            id_ = ids(*values)
+            # Call ids function for each parameter value
+            id_parts = []
+            for value in values:
+                value_id = ids(value)
+                if value_id is not None:
+                    id_parts.append(str(value_id))
+                else:
+                    id_parts.append(str(value))
+            id_ = "_".join(id_parts)
             # Validate the generated ID
             if not f"_{id_}".isidentifier():
                 raise ValueError(f"callable ids returned invalid Python identifier suffix: {id_!r}")

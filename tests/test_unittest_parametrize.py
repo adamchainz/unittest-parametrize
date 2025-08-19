@@ -486,8 +486,10 @@ def test_async_tests() -> None:
 def test_callable_ids():
     ran = 0
 
-    def make_id(x, expected):
-        return f"x{x}_exp{expected}"
+    def make_id(value):
+        if isinstance(value, int):
+            return f"val{value}"
+        return None
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -508,16 +510,18 @@ def test_callable_ids():
 
     assert ran == 3
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_x1_exp1")
-    assert hasattr(SquareTests, "test_square_x2_exp4")
-    assert hasattr(SquareTests, "test_square_x3_exp9")
+    assert hasattr(SquareTests, "test_square_val1_val1")
+    assert hasattr(SquareTests, "test_square_val2_val4")
+    assert hasattr(SquareTests, "test_square_val3_val9")
 
 
 def test_callable_ids_with_param_instances():
     ran = 0
 
-    def make_id(x, expected):
-        return f"value_{x}"
+    def make_id(value):
+        if isinstance(value, int) and value <= 4:  # Allow up to 4 to get small4
+            return f"small{value}"
+        return None
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -537,29 +541,34 @@ def test_callable_ids_with_param_instances():
 
     assert ran == 2
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_value_1")
-    assert hasattr(SquareTests, "test_square_value_2")
+    assert hasattr(SquareTests, "test_square_small1_small1")
+    assert hasattr(SquareTests, "test_square_small2_small4")
 
 
 def test_callable_ids_invalid_identifier():
-    def bad_id(x, expected):
+    def bad_id(value):
         return "!"  # Invalid identifier
 
     with pytest.raises(ValueError) as excinfo:
-        parametrize(
-            "x,expected",
-            [(1, 1)],
-            ids=bad_id,
-        )
+        class BadTests(ParametrizedTestCase):
+            @parametrize(
+                "x,expected",
+                [(1, 1)],
+                ids=bad_id,
+            )
+            def test_square(self, x: int, expected: int) -> None:
+                pass
 
-    assert excinfo.value.args[0] == "callable ids returned invalid Python identifier suffix: '!'"
+    assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(excinfo.value)
 
 
 def test_callable_ids_with_mixed_param_instances():
     ran = 0
 
-    def make_id(x, expected):
-        return f"calc_{x}"
+    def make_id(value):
+        if isinstance(value, int):
+            return f"num{value}"
+        return None
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -579,5 +588,35 @@ def test_callable_ids_with_mixed_param_instances():
 
     assert ran == 2
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_calc_1")  # From callable
+    assert hasattr(SquareTests, "test_square_num1_num1")  # From callable
     assert hasattr(SquareTests, "test_square_explicit")  # From explicit ID
+
+
+def test_callable_ids_returning_none():
+    ran = 0
+
+    def selective_id(value):
+        # Only provide IDs for even numbers, return None for others
+        if isinstance(value, int) and value % 2 == 0:
+            return f"even{value}"
+        return None
+
+    class Tests(ParametrizedTestCase):
+        @parametrize(
+            "x,y",
+            [
+                (1, 2),  # x gets "1", y gets "even2" 
+                (3, 4),  # x gets "3", y gets "even4"
+            ],
+            ids=selective_id,
+        )
+        def test_values(self, x: int, y: int) -> None:
+            nonlocal ran
+            ran += 1
+
+    run_tests(Tests)
+
+    assert ran == 2
+    assert not hasattr(Tests, "test_values")
+    assert hasattr(Tests, "test_values_1_even2")
+    assert hasattr(Tests, "test_values_3_even4")
