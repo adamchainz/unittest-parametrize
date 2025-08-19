@@ -240,6 +240,35 @@ Alternatively, you can provide the id’s separately with the ``ids`` argument:
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
 
+You can also provide a callable for ``ids`` that generates test IDs based on parameter values.
+The function is called once per parameter value and can return a string for that value or ``None`` to use the default:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    def make_id(value):
+        if isinstance(value, int):
+            return f"num{value}"
+        return None
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+This creates test methods ``test_square_num1_num1`` and ``test_square_num2_num4``.
+
 Use with other test decorators
 ------------------------------
 
