@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Unreleased
-----------
+1.7.0 (2025-08-27)
+------------------
 
 * Add support for the ``ids`` argument being a callable.
   The callable is called once per parameter value and can return a string for that value or ``None`` to use the default.
