@@ -58,8 +58,7 @@ Here’s a basic example:
 
 .. code-block:: python
 
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class SquareTests(ParametrizedTestCase):
@@ -88,8 +87,7 @@ You can provide argument names as a sequence of strings instead:
 
 .. code-block:: python
 
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class SquareTests(ParametrizedTestCase):
@@ -165,9 +163,7 @@ Pass a ``param`` object for each parameter set, setting the test ID suffix with 
 
 .. code-block:: python
 
-    from unittest_parametrize import param
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, param, parametrize
 
 
     class SquareTests(ParametrizedTestCase):
@@ -200,9 +196,7 @@ Since parameter IDs are optional, you can provide them only for some tests:
 
 .. code-block:: python
 
-    from unittest_parametrize import param
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, param, parametrize
 
 
     class SquareTests(ParametrizedTestCase):
@@ -236,8 +230,7 @@ Another option is to provide the IDs in the separate ``ids`` argument:
 
 .. code-block:: python
 
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class SquareTests(ParametrizedTestCase):
@@ -276,8 +269,7 @@ For example:
 
 .. code-block:: python
 
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     def make_id(value):
@@ -321,8 +313,7 @@ So decorators like ``@mock.patch`` need be beneath ``@parametrize``:
 .. code-block:: python
 
     from unittest import mock
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class CarpentryTests(ParametrizedTestCase):
@@ -349,8 +340,7 @@ To create a cross-product of tests, you can use nested list comprehensions:
 
 .. code-block:: python
 
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class RocketTests(ParametrizedTestCase):
@@ -374,8 +364,7 @@ __ https://docs.python.org/3/library/itertools.html#itertools.product
 .. code-block:: python
 
     from itertools import product
-    from unittest_parametrize import parametrize
-    from unittest_parametrize import ParametrizedTestCase
+    from unittest_parametrize import ParametrizedTestCase, parametrize
 
 
     class RocketTests(ParametrizedTestCase):
@@ -419,6 +408,40 @@ To parametrize all tests within a test case, create a separate decorator and app
         def test_dexterity(self, race: str) -> None: ...
 
         ...
+
+Pass parameters in a dataclass
+------------------------------
+
+Thanks to `Florian Bruhin <https://bruhin.software/>`__ for this tip, from his `pytest tips and tricks presentation <https://bruhin.software/>`__.
+
+If your test uses many parameters or cases, the parametrization may become unwieldy, as cases don’t name the arguments.
+In this case, try using a `dataclass <https://docs.python.org/3/library/dataclasses.html>`__ to hold the arguments:
+
+.. code-block:: python
+
+    from dataclasses import dataclass
+
+    from unittest_parametrize import ParametrizedTestCase, parametrize
+
+
+    @dataclass
+    class SquareParams:
+        x: int
+        expected: int
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "sp",
+            [
+                (SquareParams(x=1, expected=1),),
+                (SquareParams(x=2, expected=4),),
+            ],
+        )
+        def test_square(self, sp: SquareParams) -> None:
+            self.assertEqual(sp.x**2, sp.expected)
+
+This way, each parameter is type-checked and named, improving safety and readability.
 
 History
 =======
