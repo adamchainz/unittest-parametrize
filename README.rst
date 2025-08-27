@@ -152,7 +152,16 @@ You can see these names when running the tests:
 
     OK
 
-You can customize these names by passing ``param`` objects, which contain the arguments and an optional ID for the suffix:
+You can customize these names in several ways:
+
+1. Using ``param`` objects with IDs.
+2. Passing a sequence of strings as the ``ids`` argument.
+3. Passing a callable as the ``ids`` argument.
+
+Passing ``param`` objects with IDs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pass a ``param`` object for each parameter set, setting the test ID suffix with the optional ``id`` argument:
 
 .. code-block:: python
 
@@ -172,7 +181,7 @@ You can customize these names by passing ``param`` objects, which contain the ar
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
 
-Yielding perhaps more natural names:
+Yielding more natural names:
 
 .. code-block:: console
 
@@ -207,7 +216,7 @@ Since parameter IDs are optional, you can provide them only for some tests:
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
 
-ID-free ``param``\s fall back to the default index suffixes:
+The ID-free ``param``\s fall back to the default index suffixes:
 
 .. code-block:: console
 
@@ -220,7 +229,10 @@ ID-free ``param``\s fall back to the default index suffixes:
 
     OK
 
-Alternatively, you can provide the id’s separately with the ``ids`` argument:
+Passing a sequence of strings as the ``ids`` argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another option is to provide the IDs in the separate ``ids`` argument:
 
 .. code-block:: python
 
@@ -239,6 +251,65 @@ Alternatively, you can provide the id’s separately with the ``ids`` argument:
         )
         def test_square(self, x: int, expected: int) -> None:
             self.assertEqual(x**2, expected)
+
+This option sets the full suffixes to the provided strings:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_one (example.SquareTests.test_square_one) ... ok
+    test_square_two (example.SquareTests.test_square_two) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+
+Passing a callable as the ``ids`` argument
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``ids`` argument can also be a callable, which unittest-parametrize calls once per parameter value.
+The callable can return a string for that value, or ``None`` to use the default index suffix.
+The values are then joined with underscores to form the full suffix.
+
+For example:
+
+.. code-block:: python
+
+    from unittest_parametrize import parametrize
+    from unittest_parametrize import ParametrizedTestCase
+
+
+    def make_id(value):
+        if isinstance(value, int):
+            return f"num{value}"
+        return None
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+…yields:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_num1_num1 (example.SquareTests.test_square_num1_num1) ... ok
+    test_square_num2_num4 (example.SquareTests.test_square_num2_num4) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
 
 Use with other test decorators
 ------------------------------

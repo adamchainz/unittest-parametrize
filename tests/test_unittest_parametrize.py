@@ -66,7 +66,7 @@ def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
             "x",
-            [{"x": 1}],  # type: ignore[arg-type]
+            [{"x": 1}],  # type: ignore[list-item]
         )
 
     assert (
@@ -114,6 +114,20 @@ def test_duplicate_param_ids_mixed():
             "x",
             [
                 param(1),
+                param(1, id="a"),
+            ],
+            ids=["a", None],
+        )
+
+    assert excinfo.value.args[0] == "Duplicate param id 'a'"
+
+
+def test_duplicate_tuple_param_ids_mixed():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            "x",
+            [
+                (1,),
                 param(1, id="a"),
             ],
             ids=["a", None],
@@ -481,3 +495,138 @@ def test_async_tests() -> None:
     assert ran == 2
     assert hasattr(AsyncTests, "test_x_0")
     assert hasattr(AsyncTests, "test_x_1")
+
+
+def test_callable_ids():
+    ran = 0
+
+    def make_id(value):
+        return f"num{value}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+                (3, 9),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 3
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_num2_num4")
+    assert hasattr(SquareTests, "test_square_num3_num9")
+
+
+def test_callable_ids_with_param_instances():
+    ran = 0
+
+    def make_id(value):
+        return f"num{value}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+                param(2, 4),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_num2_num4")
+
+
+def test_callable_ids_invalid_identifier():
+    def bad_id(value):
+        return "!"
+
+    with pytest.raises(ValueError) as excinfo:
+
+        class BadTests(ParametrizedTestCase):
+            @parametrize(
+                "x,expected",
+                [(1, 1)],
+                ids=bad_id,
+            )
+            def test_square(self, x: int, expected: int) -> None:  # pragma: no cover
+                pass
+
+    assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(
+        excinfo.value
+    )
+
+
+def test_callable_ids_with_mixed_param_instances():
+    ran = 0
+
+    def make_id(value):
+        return f"num{value}"
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1),
+                param(2, 4, id="explicit"),
+            ],
+            ids=make_id,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x**2, expected)
+
+    run_tests(SquareTests)
+
+    assert ran == 2
+    assert not hasattr(SquareTests, "test_square")
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_explicit")
+
+
+def test_callable_ids_returning_none():
+    ran = 0
+
+    def even_numbers_only(value):
+        if isinstance(value, int) and value % 2 == 0:
+            return f"even{value}"
+        return None
+
+    class Tests(ParametrizedTestCase):
+        @parametrize(
+            "x,y",
+            [
+                (1, 2),
+                (3, 4),
+            ],
+            ids=even_numbers_only,
+        )
+        def test_values(self, x: int, y: int) -> None:
+            nonlocal ran
+            ran += 1
+
+    run_tests(Tests)
+
+    assert ran == 2
+    assert not hasattr(Tests, "test_values")
+    assert hasattr(Tests, "test_values_1_even2")
+    assert hasattr(Tests, "test_values_3_even4")
