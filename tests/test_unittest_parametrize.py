@@ -66,7 +66,7 @@ def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
             "x",
-            [{"x": 1}],  # type: ignore[arg-type]
+            [{"x": 1}],  # type: ignore[list-item]
         )
 
     assert (
@@ -114,6 +114,20 @@ def test_duplicate_param_ids_mixed():
             "x",
             [
                 param(1),
+                param(1, id="a"),
+            ],
+            ids=["a", None],
+        )
+
+    assert excinfo.value.args[0] == "Duplicate param id 'a'"
+
+
+def test_duplicate_tuple_param_ids_mixed():
+    with pytest.raises(ValueError) as excinfo:
+        parametrize(
+            "x",
+            [
+                (1,),
                 param(1, id="a"),
             ],
             ids=["a", None],
@@ -488,7 +502,7 @@ def test_callable_ids():
 
     def make_id(value):
         if isinstance(value, int):
-            return f"val{value}"
+            return f"num{value}"
         return None
 
     class SquareTests(ParametrizedTestCase):
@@ -510,18 +524,16 @@ def test_callable_ids():
 
     assert ran == 3
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_val1_val1")
-    assert hasattr(SquareTests, "test_square_val2_val4")
-    assert hasattr(SquareTests, "test_square_val3_val9")
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_num2_num4")
+    assert hasattr(SquareTests, "test_square_num3_num9")
 
 
 def test_callable_ids_with_param_instances():
     ran = 0
 
     def make_id(value):
-        if isinstance(value, int) and value <= 4:  # Allow up to 4 to get small4
-            return f"small{value}"
-        return None
+        return f"num{value}"
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -541,15 +553,16 @@ def test_callable_ids_with_param_instances():
 
     assert ran == 2
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_small1_small1")
-    assert hasattr(SquareTests, "test_square_small2_small4")
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_num2_num4")
 
 
 def test_callable_ids_invalid_identifier():
     def bad_id(value):
-        return "!"  # Invalid identifier
+        return "!"
 
     with pytest.raises(ValueError) as excinfo:
+
         class BadTests(ParametrizedTestCase):
             @parametrize(
                 "x,expected",
@@ -559,7 +572,9 @@ def test_callable_ids_invalid_identifier():
             def test_square(self, x: int, expected: int) -> None:
                 pass
 
-    assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(excinfo.value)
+    assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(
+        excinfo.value
+    )
 
 
 def test_callable_ids_with_mixed_param_instances():
@@ -574,8 +589,8 @@ def test_callable_ids_with_mixed_param_instances():
         @parametrize(
             "x,expected",
             [
-                param(1, 1),  # Will use callable ID
-                param(2, 4, id="explicit"),  # Has explicit ID, should use it
+                param(1, 1),
+                param(2, 4, id="explicit"),
             ],
             ids=make_id,
         )
@@ -588,15 +603,14 @@ def test_callable_ids_with_mixed_param_instances():
 
     assert ran == 2
     assert not hasattr(SquareTests, "test_square")
-    assert hasattr(SquareTests, "test_square_num1_num1")  # From callable
-    assert hasattr(SquareTests, "test_square_explicit")  # From explicit ID
+    assert hasattr(SquareTests, "test_square_num1_num1")
+    assert hasattr(SquareTests, "test_square_explicit")
 
 
 def test_callable_ids_returning_none():
     ran = 0
 
-    def selective_id(value):
-        # Only provide IDs for even numbers, return None for others
+    def even_numbers_only(value):
         if isinstance(value, int) and value % 2 == 0:
             return f"even{value}"
         return None
@@ -605,10 +619,10 @@ def test_callable_ids_returning_none():
         @parametrize(
             "x,y",
             [
-                (1, 2),  # x gets "1", y gets "even2" 
-                (3, 4),  # x gets "3", y gets "even4"
+                (1, 2),
+                (3, 4),
             ],
-            ids=selective_id,
+            ids=even_numbers_only,
         )
         def test_values(self, x: int, y: int) -> None:
             nonlocal ran
