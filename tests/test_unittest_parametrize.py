@@ -501,9 +501,7 @@ def test_callable_ids():
     ran = 0
 
     def make_id(value):
-        if isinstance(value, int):
-            return f"num{value}"
-        return None
+        return f"num{value}"
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
@@ -569,7 +567,7 @@ def test_callable_ids_invalid_identifier():
                 [(1, 1)],
                 ids=bad_id,
             )
-            def test_square(self, x: int, expected: int) -> None:
+            def test_square(self, x: int, expected: int) -> None:  # pragma: no cover
                 pass
 
     assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(
@@ -581,9 +579,7 @@ def test_callable_ids_with_mixed_param_instances():
     ran = 0
 
     def make_id(value):
-        if isinstance(value, int):
-            return f"num{value}"
-        return None
+        return f"num{value}"
 
     class SquareTests(ParametrizedTestCase):
         @parametrize(
