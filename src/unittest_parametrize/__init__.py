@@ -120,7 +120,7 @@ TestFunc = Callable[P, T]
 
 def parametrize(
     argnames: str | Sequence[str],
-    argvalues: Sequence[tuple[Any, ...] | param],
+    argvalues: Sequence[tuple[Any, ...] | param | Any],
     ids: Sequence[str | None] | Callable[[Any], str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
@@ -158,10 +158,13 @@ def parametrize(
                 raise ValueError(f"Duplicate param id {argvalue.id!r}")
             seen_ids.add(argvalue.id)
             params.append(argvalue)
-
+        elif len(argnames) == 1:
+            argvalue = param(argvalue, id=make_id(i, (argvalue,), ids))
+            seen_ids.add(argvalue.id)
+            params.append(argvalue)
         else:
             raise TypeError(
-                f"argvalue at index {i} is not a tuple or param instance: {argvalue!r}"
+                f"argvalue at index {i} is not a tuple, param instance, or single value: {argvalue!r}"
             )
 
     _parametrized = parametrized(argnames, params)

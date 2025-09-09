@@ -7,6 +7,23 @@ Unreleased
 
 * Support Python 3.14.
 
+* Add support for providing single parameter values without wrapping tuples, such as:
+
+  .. code-block:: python
+
+      from unittest_parametrize import ParametrizedTestCase, parametrize
+
+
+      class EqualTests(ParametrizedTestCase):
+          @parametrize(
+              "x",
+              [1, 2, 3],
+          )
+          def test_equal(self, x: int) -> None:
+              self.assertEqual(x, x)
+
+  Thanks to Jirka Borovec for the report in `Issue #146 <https://github.com/adamchainz/unittest-parametrize/issues/146>`__.
+
 1.7.0 (2025-08-27)
 ------------------
 

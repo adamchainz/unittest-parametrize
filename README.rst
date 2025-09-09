@@ -51,8 +51,8 @@ There are two steps to parametrize a test case:
 2. Apply ``@parametrize`` to any test methods for parametrization.
    This decorator takes (at least):
 
-   * the argument names to parametrize, as comma-separated string
-   * a list of parameter tuples to create individual tests for
+   * the argument names to parametrize, as comma-separated string or sequence of strings.
+   * a list of parameters to create individual tests for, which may be tuples, ``param`` objects, or single values (for one argument).
 
 Here’s a basic example:
 
@@ -79,6 +79,25 @@ It supports both synchronous and asynchronous test methods.
 
 .. |__init_subclass__ hook| replace:: ``__init_subclass__`` hook
 __ https://docs.python.org/3/reference/datamodel.html#object.__init_subclass__
+
+Provide a single parameter without a wrapping tuple
+---------------------------------------------------
+
+If you only need a single parameter, you can provide values without wrapping them in tuples:
+
+.. code-block:: python
+
+    from unittest_parametrize import ParametrizedTestCase, parametrize
+
+
+    class EqualTests(ParametrizedTestCase):
+        @parametrize(
+            "x",
+            [1, 2, 3],
+        )
+        def test_equal(self, x: int) -> None:
+            self.assertEqual(x, x)
+
 
 Provide argument names as separate strings
 ------------------------------------------
