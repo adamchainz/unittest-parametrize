@@ -65,13 +65,13 @@ def test_wrong_length_param():
 def test_wrong_type_argvalues():
     with pytest.raises(TypeError) as excinfo:
         parametrize(
-            "x",
-            [{"x": 1}],  # type: ignore[list-item]
+            "x,y",
+            [{"x": 1}, {"y": 1}],
         )
 
     assert (
         excinfo.value.args[0]
-        == "argvalue at index 0 is not a tuple or param instance: {'x': 1}"
+        == "argvalue at index 0 is not a tuple, param instance, or single value: {'x': 1}"
     )
 
 
@@ -207,7 +207,7 @@ def test_vanilla():
     assert ran
 
 
-def test_simple_parametrized_failure_has_note():
+def test_parametrized_failure_has_note():
     class SquareTests(ParametrizedTestCase):
         @parametrize(
             "x,expected",
@@ -225,7 +225,7 @@ def test_simple_parametrized_failure_has_note():
         assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
-def test_simple_parametrized_async_failure_has_note():
+def test_parametrized_async_failure_has_note():
     class SquareTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
         @parametrize(
             "x,expected",
@@ -244,7 +244,25 @@ def test_simple_parametrized_async_failure_has_note():
         assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
-def test_simple_parametrized():
+def test_single_parametrized():
+    ran = 0
+
+    class EqualTests(ParametrizedTestCase):
+        @parametrize("x", [1, 2])
+        def test_equal(self, x: int) -> None:
+            nonlocal ran
+            ran += 1
+            self.assertEqual(x, x)
+
+    run_tests(EqualTests)
+
+    assert ran == 2
+    assert not hasattr(EqualTests, "test_equal")
+    assert hasattr(EqualTests, "test_equal_0")
+    assert hasattr(EqualTests, "test_equal_1")
+
+
+def test_double_parametrized():
     ran = 0
 
     class SquareTests(ParametrizedTestCase):
@@ -268,7 +286,7 @@ def test_simple_parametrized():
     assert hasattr(SquareTests, "test_square_1")
 
 
-def test_simple_parametrized_async():
+def test_double_parametrized_async():
     ran = 0
 
     class SquareTests(ParametrizedTestCase, IsolatedAsyncioTestCase):
