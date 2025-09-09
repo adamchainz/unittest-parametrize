@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "unittest-parametrize"
-version = "1.7.0"
+version = "1.8.0"
 description = "Parametrize tests within unittest TestCases."
 readme = "README.rst"
 keywords = [
