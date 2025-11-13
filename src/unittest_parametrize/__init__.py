@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from functools import wraps
 from types import FunctionType
 from typing import Any, Callable, TypeVar
@@ -120,7 +120,7 @@ TestFunc = Callable[P, T]
 
 def parametrize(
     argnames: str | Sequence[str],
-    argvalues: Sequence[tuple[Any, ...] | param | Any],
+    argvalues: Iterable[tuple[Any, ...] | param | Any],
     ids: Sequence[str | None] | Callable[[Any], str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
