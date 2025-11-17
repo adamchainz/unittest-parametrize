@@ -17,22 +17,18 @@ license-files = [ "LICENSE" ]
 authors = [
   { name = "Adam Johnson", email = "me@adamj.eu" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Natural Language :: English",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
-]
-dependencies = [
-  "typing-extensions; python_version<'3.10'",
 ]
 urls.Changelog = "https://github.com/adamchainz/unittest-parametrize/blob/main/CHANGELOG.rst"
 urls.Funding = "https://adamj.eu/books/"
@@ -43,7 +39,6 @@ test = [
   "coverage[toml]",
   "pytest",
   "pytest-randomly",
-  "typing-extensions; python_version<'3.10'",
 ]
 
 [tool.ruff]

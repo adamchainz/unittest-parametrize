@@ -2,16 +2,11 @@ from __future__ import annotations
 
 import inspect
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from functools import wraps
 from types import FunctionType
-from typing import Any, Callable, TypeVar
+from typing import Any, ParamSpec, TypeVar
 from unittest import TestCase
-
-if sys.version_info >= (3, 10):
-    from typing import ParamSpec
-else:
-    from typing_extensions import ParamSpec
 
 
 class ParametrizedTestCase(TestCase):
