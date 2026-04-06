@@ -28,7 +28,7 @@ class ParametrizedTestCase(TestCase):
                     + func.__qualname__
                 )
 
-            _parametrized = func._parametrized  # type: ignore [attr-defined]
+            _parametrized = func._parametrized
             delattr(cls, name)
             for param in _parametrized.params:
                 params = dict(zip(_parametrized.argnames, param.args))
