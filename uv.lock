@@ -287,6 +287,6 @@ test = [
 [package.metadata.requires-dev]
 test = [
     { name = "coverage", extras = ["toml"] },
-    { name = "pytest" },
+    { name = "pytest", specifier = ">=9" },
     { name = "pytest-randomly" },
 ]
