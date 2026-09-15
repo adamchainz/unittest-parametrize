@@ -5,6 +5,9 @@ Changelog
 Unreleased
 ----------
 
+* Detect duplicate parameter IDs for tuples and single values, not only ``param`` instances.
+  Previously, such collisions went unreported by ``@parametrize``, instead surfacing later as a ``ValueError`` about a duplicate test name.
+
 * Support Python 3.15.
 
 * Switch package build backend from setuptools to `uv_build <https://docs.astral.sh/uv/concepts/build-backend/>`__.

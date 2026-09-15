@@ -128,7 +128,7 @@ def parametrize(
     if ids is not None and not ids_callable and len(ids) != len(argvalues):  # type: ignore[arg-type]
         raise ValueError("ids must have the same length as argvalues")
 
-    seen_ids = set()
+    seen_ids: set[str | None] = set()
     params = []
     for i, argvalue in enumerate(argvalues):
         if isinstance(argvalue, tuple):
@@ -138,8 +138,6 @@ def parametrize(
                     + f"({len(argvalue)} != {len(argnames)})"
                 )
             argvalue = param(*argvalue, id=make_id(i, argvalue, ids))
-            params.append(argvalue)
-            seen_ids.add(argvalue.id)
         elif isinstance(argvalue, param):
             if len(argvalue.args) != len(argnames):
                 raise ValueError(
@@ -149,18 +147,17 @@ def parametrize(
 
             if argvalue.id is None:
                 argvalue = param(*argvalue.args, id=make_id(i, argvalue, ids))
-            if argvalue.id in seen_ids:
-                raise ValueError(f"Duplicate param id {argvalue.id!r}")
-            seen_ids.add(argvalue.id)
-            params.append(argvalue)
         elif len(argnames) == 1:
             argvalue = param(argvalue, id=make_id(i, (argvalue,), ids))
-            seen_ids.add(argvalue.id)
-            params.append(argvalue)
         else:
             raise TypeError(
                 f"argvalue at index {i} is not a tuple, param instance, or single value: {argvalue!r}"
             )
+
+        if argvalue.id in seen_ids:
+            raise ValueError(f"Duplicate param id {argvalue.id!r}")
+        seen_ids.add(argvalue.id)
+        params.append(argvalue)
 
     _parametrized = parametrized(argnames, params)
     bind_kwargs = dict.fromkeys(_parametrized.argnames)
