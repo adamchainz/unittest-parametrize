@@ -734,3 +734,35 @@ def test_callable_ids_returning_none():
     assert not hasattr(Tests, "test_values")
     assert hasattr(Tests, "test_values_1_even2")
     assert hasattr(Tests, "test_values_3_even4")
+
+
+def test_duplicate_test_name_from_base_class():
+    class BaseTests(ParametrizedTestCase):
+        @parametrize("x", [(1,)])
+        def test_square(self, x: int) -> None:  # pragma: no cover
+            pass
+
+    with pytest.raises(ValueError) as excinfo:
+
+        class SubTests(BaseTests):
+            @parametrize("x", [(2,)])
+            def test_square(self, x: int) -> None:  # pragma: no cover
+                pass
+
+    assert excinfo.value.args[0] == "Duplicate test name test_square_0 in SubTests"
+
+
+def test_subclass_inherits_parametrized_tests():
+    ran = []
+
+    class BaseTests(ParametrizedTestCase):
+        @parametrize("x", [(1,), (2,)])
+        def test_square(self, x: int) -> None:
+            ran.append(x)
+
+    class SubTests(BaseTests):
+        pass
+
+    run_tests(SubTests)
+
+    assert ran == [1, 2]
