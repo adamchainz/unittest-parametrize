@@ -169,6 +169,8 @@ You can see these names when running the tests:
 
     OK
 
+(By the way, avoid using a ``set`` or other unordered collection for parameter values, as that will assign different names to each test value between runs, due to `Python’s hash randomization <https://docs.python.org/3/reference/datamodel.html#object.__hash__:~:text=the%20%5F%5Fhash%5F%5F%28%29%20values>`__.)
+
 You can customize these names in several ways:
 
 1. Using ``param`` objects with IDs.

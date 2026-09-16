@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import sys
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Sequence
 from functools import wraps
 from types import FunctionType
 from typing import Any, ParamSpec, TypeVar
@@ -123,7 +123,7 @@ T = TypeVar("T")
 
 def parametrize(
     argnames: str | Sequence[str],
-    argvalues: Iterable[tuple[Any, ...] | param | Any],
+    argvalues: Sequence[tuple[Any, ...] | param | Any],
     ids: Sequence[str | None] | Callable[[Any], str | None] | None = None,
 ) -> Callable[[Callable[P, T]], Callable[P, T]]:
     if isinstance(argnames, str):
@@ -132,8 +132,7 @@ def parametrize(
     if len(argnames) == 0:
         raise ValueError("argnames must contain at least one element")
 
-    ids_callable = callable(ids)
-    if ids is not None and not ids_callable and len(ids) != len(argvalues):  # type: ignore[arg-type]
+    if ids is not None and not callable(ids) and len(ids) != len(argvalues):
         raise ValueError("ids must have the same length as argvalues")
 
     seen_ids: set[str | None] = set()
