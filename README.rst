@@ -548,6 +548,28 @@ In this case, try using a `dataclass <https://docs.python.org/3/library/dataclas
 
 This way, each parameter is type-checked and named, improving safety and readability.
 
+Differences from pytest
+-----------------------
+
+The API mirrors ``@pytest.mark.parametrize``, but parametrized tests here are real methods on the test case, created at class definition time.
+That is what makes them work with any test runner, and it is also where the differences come from:
+
+* Test names use an underscore suffix, like ``test_square_0``, rather than pytest’s bracketed ``test_square[1-1]``, since they have to be valid Python identifiers.
+  For the same reason, IDs must be valid Python identifier suffixes.
+
+* Default IDs are indexes rather than being generated from the parameter values.
+  Pass ``ids=str`` for names closer to pytest’s, as above.
+
+* ``@parametrize`` is not stackable, so there is no cross-product of two decorators.
+  Build the product yourself, as above.
+
+* ``@parametrize`` does not work as a class decorator, so it cannot parametrize every test in a test case at once.
+  Apply a shared decorator to each method, as above.
+
+* There are no fixtures, so there is no equivalent of pytest’s ``indirect`` parametrization.
+
+* There is no marker system, so ``param`` takes ``skip`` and ``expected_failure`` directly rather than pytest’s general ``marks`` argument.
+
 History
 =======
 
