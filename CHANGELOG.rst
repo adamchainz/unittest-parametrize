@@ -13,6 +13,13 @@ Unreleased
 
   `PR #156 <https://github.com/adamchainz/unittest-parametrize/pull/156>`__.
 
+* Rename the code objects of generated test methods to match their test names, like ``test_square_0``.
+  Previously, code objects all had the internal wrapper name ``test``, which notably broke support for `Coverage.py’s dynamic contexts <https://coverage.readthedocs.io/en/latest/contexts.html#dynamic-contexts>`__.
+  Parametrized tests now get correctly-labelled per-test contexts on Coverage.py, and tracebacks, profilers, and debuggers also show the real test names.
+
+  `PR #189 <https://github.com/adamchainz/unittest-parametrize/pull/189>`__.
+  Thanks to Jeffrey C. Lerman for the report in `Issue #86 <https://github.com/adamchainz/unittest-parametrize/issues/86>`__.
+
 * Change the type of the ``argvalues`` parameter from ``Sequence`` to ``Iterable``.
   This allows ``set``\s, ``frozenset``\s, and other iterables to be used as the source of parameter values, which was always supported except by the type hints.
 
