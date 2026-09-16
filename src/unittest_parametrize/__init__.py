@@ -110,7 +110,6 @@ class parametrized:
 
 P = ParamSpec("P")
 T = TypeVar("T")
-TestFunc = Callable[P, T]
 
 
 def parametrize(
