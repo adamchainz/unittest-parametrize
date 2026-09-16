@@ -281,7 +281,7 @@ Passing a callable as the ``ids`` argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``ids`` argument can also be a callable, which unittest-parametrize calls once per parameter value.
-The callable can return a string for that value, or ``None`` to use the default index suffix.
+The callable can return a string for that value, or ``None`` to fall back to the value’s string representation.
 The values are then joined with underscores to form the full suffix.
 
 For example:
