@@ -324,6 +324,56 @@ For example:
 
     OK
 
+Skip a parameter set, or expect it to fail
+------------------------------------------
+
+``param()`` takes two optional parameters to modify the generated test:
+
+* ``skip`` - accepts a reason string to skip that parameter set’s test with |unittest.skip()|__.
+
+  .. |unittest.skip()| replace:: ``unittest.skip()``
+  __ https://docs.python.org/3/library/unittest.html#unittest.skip
+
+* ``expected_failure=True`` - marks that parameter set’s test as expected to fail with |unittest.expectedFailure|__.
+
+  .. |unittest.expectedFailure| replace:: ``unittest.expectedFailure``
+  __ https://docs.python.org/3/library/unittest.html#unittest.expectedFailure
+
+For example:
+
+.. code-block:: python
+
+    from unittest_parametrize import ParametrizedTestCase, param, parametrize
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1, id="one"),
+                param(2, 5, id="two", expected_failure=True),
+                param(3, 9, id="three", skip="slow, see #123"),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+Yielding:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_one (t.SquareTests.test_square_one) ... ok
+    test_square_three (t.SquareTests.test_square_three) ... skipped 'slow, see #123'
+    test_square_two (t.SquareTests.test_square_two) ... expected failure
+
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.001s
+
+    OK (skipped=1, expected failures=1)
+
+A parameter set cannot be both, since skipping it means it never runs.
+
 Use with other test decorators
 ------------------------------
 

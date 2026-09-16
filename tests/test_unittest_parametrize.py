@@ -877,3 +877,89 @@ def test_coverage_dynamic_contexts(tmp_path):
         "test_demo.SquareTests.test_square_0",
         "test_demo.SquareTests.test_square_1",
     }
+
+
+def test_param_skip_and_expected_failure():
+    with pytest.raises(ValueError) as excinfo:
+        param(1, skip="nope", expected_failure=True)
+
+    assert (
+        excinfo.value.args[0] == "param cannot be both skipped and an expected failure"
+    )
+
+
+def test_param_skip():
+    ran = []
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1, id="one"),
+                param(2, 5, id="two", skip="wrong, pending a fix"),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            ran.append(x)
+            self.assertEqual(x**2, expected)
+
+    result = run_tests(SquareTests)
+
+    assert ran == [1]
+    assert not result.failures
+    assert [reason for _, reason in result.skipped] == ["wrong, pending a fix"]
+
+
+def test_param_skip_keeps_test_name():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x", [param(1, skip="later")])
+        def test_square(self, x: int) -> None:  # pragma: no cover
+            pass
+
+    test = vars(SquareTests)["test_square_0"]
+    assert test.__name__ == "test_square_0"
+    assert test.__code__.co_name == "test_square_0"
+
+
+def test_param_expected_failure():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                param(1, 1, id="one"),
+                param(2, 5, id="two", expected_failure=True),
+            ],
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+    result = run_tests(SquareTests)
+
+    assert not result.failures
+    assert len(result.expectedFailures) == 1
+    assert result.testsRun == 2
+
+
+def test_param_expected_failure_but_passes():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x,expected", [param(2, 4, expected_failure=True)])
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+    result = run_tests(SquareTests)
+
+    assert len(result.unexpectedSuccesses) == 1
+
+
+def test_param_skip_with_generated_id():
+    ran = []
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x", [param(1, skip="later"), param(2)])
+        def test_square(self, x: int) -> None:
+            ran.append(x)
+
+    result = run_tests(SquareTests)
+
+    assert ran == [2]
+    assert [reason for _, reason in result.skipped] == ["later"]
