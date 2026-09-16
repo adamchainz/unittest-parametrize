@@ -190,17 +190,20 @@ def make_id(
         id_parts = []
         for value in values:
             id_part = ids(value)
-            if id_part is not None:
-                id_parts.append(id_part)
-            else:
-                id_parts.append(str(value))
-        id_ = "_".join(id_parts)
-        # Validate the generated ID
-        if not f"_{id_}".isidentifier():
-            raise ValueError(
-                f"callable ids returned invalid Python identifier suffix: {id_!r}"
-            )
-        return id_
+            if id_part is None:
+                # Fall back to the value's string representation.
+                id_part = str(value)
+                if not f"_{id_part}".isidentifier():
+                    raise ValueError(
+                        f"ids returned None for {value!r}, whose string representation"
+                        + f" is not a valid Python identifier suffix: {id_part!r}"
+                    )
+            elif not f"_{id_part}".isidentifier():
+                raise ValueError(
+                    f"callable ids returned invalid Python identifier suffix: {id_part!r}"
+                )
+            id_parts.append(id_part)
+        return "_".join(id_parts)
     elif ids and ids[i]:
         return str(ids[i])
     else:

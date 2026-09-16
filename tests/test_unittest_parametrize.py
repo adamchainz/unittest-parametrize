@@ -651,8 +651,31 @@ def test_callable_ids_invalid_identifier():
             def test_square(self, x: int, expected: int) -> None:  # pragma: no cover
                 pass
 
-    assert "callable ids returned invalid Python identifier suffix: '!_!'" in str(
+    assert "callable ids returned invalid Python identifier suffix: '!'" in str(
         excinfo.value
+    )
+
+
+def test_callable_ids_returning_none_invalid_identifier():
+    def only_ints(value):
+        if isinstance(value, int):
+            return f"num{value}"
+        return None
+
+    with pytest.raises(ValueError) as excinfo:
+
+        class BadTests(ParametrizedTestCase):
+            @parametrize(
+                "x,expected",
+                [(2, 2.5)],
+                ids=only_ints,
+            )
+            def test_square(self, x: int, expected: float) -> None:  # pragma: no cover
+                pass
+
+    assert excinfo.value.args[0] == (
+        "ids returned None for 2.5, whose string representation is not a valid"
+        " Python identifier suffix: '2.5'"
     )
 
 
