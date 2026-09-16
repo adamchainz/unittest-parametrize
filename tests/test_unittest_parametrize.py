@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import sqlite3
+import subprocess
 import sys
 import unittest
+from pathlib import Path
+from textwrap import dedent
 from types import SimpleNamespace
 from unittest import IsolatedAsyncioTestCase, mock
 
 import pytest
 
+import unittest_parametrize
 from unittest_parametrize import ParametrizedTestCase, param, parametrize
 
 
@@ -766,3 +772,108 @@ def test_subclass_inherits_parametrized_tests():
     run_tests(SubTests)
 
     assert ran == [1, 2]
+
+
+def test_parametrized_code_object_names():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x", [(1,), (2,)])
+        def test_square(self, x: int) -> None:  # pragma: no cover
+            pass
+
+    func = SquareTests.test_square_0  # type: ignore[attr-defined]
+    assert func.__code__.co_name == "test_square_0"
+    if sys.version_info >= (3, 11):
+        assert func.__code__.co_qualname == func.__qualname__
+
+
+def test_parametrized_code_object_names_async():
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x", [(1,), (2,)])
+        async def test_square(self, x: int) -> None:  # pragma: no cover
+            pass
+
+    func = SquareTests.test_square_1  # type: ignore[attr-defined]
+    assert func.__code__.co_name == "test_square_1"
+    if sys.version_info >= (3, 11):
+        assert func.__code__.co_qualname == func.__qualname__
+
+
+def test_parametrized_test_resolvable_from_frame():
+    # Emulate how coverage.py's dynamic contexts feature identifies test
+    # methods: frame.f_code.co_name looked up on the frame's self.
+    names = []
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize("x", [(1,), (2,)])
+        def test_square(self, x: int) -> None:
+            frame = sys._getframe(1)
+            co_name = frame.f_code.co_name
+            method = getattr(frame.f_locals["self"], co_name, None)
+            names.append(co_name if method is not None else None)
+
+    result = run_tests(SquareTests)
+
+    assert result.wasSuccessful()
+    assert names == ["test_square_0", "test_square_1"]
+
+
+def test_coverage_dynamic_contexts(tmp_path):
+    (tmp_path / "prod.py").write_text(
+        dedent(
+            """\
+            def square(x):
+                return x * x
+            """
+        )
+    )
+    (tmp_path / "test_demo.py").write_text(
+        dedent(
+            """\
+            from unittest_parametrize import ParametrizedTestCase, parametrize
+            import prod
+
+            class SquareTests(ParametrizedTestCase):
+                @parametrize("x,expected", [(1, 1), (2, 4)])
+                def test_square(self, x, expected):
+                    assert prod.square(x) == expected
+            """
+        )
+    )
+    (tmp_path / ".coveragerc").write_text(
+        dedent(
+            """\
+            [run]
+            dynamic_context = test_function
+            """
+        )
+    )
+
+    src_path = str(Path(unittest_parametrize.__file__).parent.parent)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "run",
+            "--include=prod.py",
+            "-m",
+            "unittest",
+            "test_demo",
+        ],
+        cwd=tmp_path,
+        env={**os.environ, "PYTHONPATH": src_path},
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    db = sqlite3.connect(tmp_path / ".coverage")
+    try:
+        contexts = {c for (c,) in db.execute("select context from context")}
+    finally:
+        db.close()
+    assert contexts == {
+        "",
+        "test_demo.SquareTests.test_square_0",
+        "test_demo.SquareTests.test_square_1",
+    }
