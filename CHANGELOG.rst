@@ -13,6 +13,11 @@ Unreleased
 
   `PR #156 <https://github.com/adamchainz/unittest-parametrize/pull/156>`__.
 
+* Change the type of the ``argvalues`` parameter from ``Sequence`` to ``Iterable``.
+  This allows ``set``\s, ``frozenset``\s, and other iterables to be used as the source of parameter values, which was always supported except by the type hints.
+
+  Thanks to Ülgen Sarıkavak in `PR #155 <https://github.com/adamchainz/unittest-parametrize/pull/155>`__.
+
 * Detect duplicate parameter IDs for tuples and single values, not only ``param`` instances.
   Previously, such collisions went unreported by ``@parametrize``, instead surfacing later as a ``ValueError`` about a duplicate test name.
 
