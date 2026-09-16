@@ -324,6 +324,40 @@ For example:
 
     OK
 
+Passing ``str`` names each test after its parameter values, like pytest does by default:
+
+.. code-block:: python
+
+    from unittest_parametrize import ParametrizedTestCase, parametrize
+
+
+    class SquareTests(ParametrizedTestCase):
+        @parametrize(
+            "x,expected",
+            [
+                (1, 1),
+                (2, 4),
+            ],
+            ids=str,
+        )
+        def test_square(self, x: int, expected: int) -> None:
+            self.assertEqual(x**2, expected)
+
+…yields:
+
+.. code-block:: console
+
+    $ python -m unittest t.py -v
+    test_square_1_1 (t.SquareTests.test_square_1_1) ... ok
+    test_square_2_4 (t.SquareTests.test_square_2_4) ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.000s
+
+    OK
+
+This works for values whose string representations are valid Python identifier suffixes, so mostly numbers and simple strings.
+
 Skip a parameter set, or expect it to fail
 ------------------------------------------
 
