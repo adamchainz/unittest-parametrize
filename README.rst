@@ -98,6 +98,8 @@ If you only need a single parameter, you can provide values without wrapping the
         def test_equal(self, x: int) -> None:
             self.assertEqual(x, x)
 
+Tuples are the exception, since they are always read as one value per argument.
+To use tuples as single parameter values, wrap each one in a ``param``, like ``param((1, 2))``.
 
 Provide argument names as separate strings
 ------------------------------------------
