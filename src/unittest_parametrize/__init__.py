@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from types import FunctionType
 from typing import Any, ParamSpec, TypeVar
-from unittest import TestCase
+from unittest import TestCase, expectedFailure, skip
 
 
 class ParametrizedTestCase(TestCase):
@@ -77,6 +77,11 @@ class ParametrizedTestCase(TestCase):
                                 )
                             raise
 
+                if param.skip is not None:
+                    test = skip(param.skip)(test)
+                elif param.expected_failure:
+                    test = expectedFailure(test)
+
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
                 if sys.version_info >= (3, 11):
@@ -98,15 +103,26 @@ class ParametrizedTestCase(TestCase):
 
 
 class param:
-    __slots__ = ("args", "id")
+    __slots__ = ("args", "expected_failure", "id", "skip")
 
-    def __init__(self, *args: Any, id: str | None = None) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        id: str | None = None,
+        skip: str | None = None,
+        expected_failure: bool = False,
+    ) -> None:
         self.args = args
 
         if id is not None and not f"_{id}".isidentifier():
             raise ValueError(f"id must be a valid Python identifier suffix: {id!r}")
 
+        if skip is not None and expected_failure:
+            raise ValueError("param cannot be both skipped and an expected failure")
+
         self.id = id
+        self.skip = skip
+        self.expected_failure = expected_failure
 
 
 class parametrized:
@@ -153,7 +169,12 @@ def parametrize(
                 )
 
             if argvalue.id is None:
-                argvalue = param(*argvalue.args, id=make_id(i, argvalue, ids))
+                argvalue = param(
+                    *argvalue.args,
+                    id=make_id(i, argvalue, ids),
+                    skip=argvalue.skip,
+                    expected_failure=argvalue.expected_failure,
+                )
         elif len(argnames) == 1:
             argvalue = param(argvalue, id=make_id(i, (argvalue,), ids))
         else:

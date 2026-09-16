@@ -13,6 +13,10 @@ Unreleased
 
   `PR #156 <https://github.com/adamchainz/unittest-parametrize/pull/156>`__.
 
+* Add ``skip`` and ``expected_failure`` arguments to ``param``, to apply ``unittest.skip()`` or ``unittest.expectedFailure`` to a single parameter set.
+
+  `PR #191 <https://github.com/adamchainz/unittest-parametrize/pull/191>`__.
+
 * Rename the code objects of generated test methods to match their test names, like ``test_square_0``.
   Previously, code objects all had the internal wrapper name ``test``, which notably broke support for `Coverage.py’s dynamic contexts <https://coverage.readthedocs.io/en/latest/contexts.html#dynamic-contexts>`__.
   Parametrized tests now get correctly-labelled per-test contexts on Coverage.py, and tracebacks, profilers, and debuggers also show the real test names.
