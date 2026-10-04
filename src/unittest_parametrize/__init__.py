@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import sys
 from collections.abc import Callable, Sequence
 from functools import wraps
 from types import FunctionType
@@ -46,13 +45,10 @@ class ParametrizedTestCase(TestCase):
                         try:
                             return await _func(self, *args, **_params, **kwargs)
                         except Exception as exc:
-                            if sys.version_info >= (3, 11):
-                                exc.add_note(
-                                    "Test parameters: "
-                                    + ", ".join(
-                                        f"{k}={v!r}" for k, v in _params.items()
-                                    )
-                                )
+                            exc.add_note(
+                                "Test parameters: "
+                                + ", ".join(f"{k}={v!r}" for k, v in _params.items())
+                            )
                             raise
 
                 else:
@@ -68,13 +64,10 @@ class ParametrizedTestCase(TestCase):
                         try:
                             return _func(self, *args, **_params, **kwargs)
                         except Exception as exc:
-                            if sys.version_info >= (3, 11):
-                                exc.add_note(
-                                    "Test parameters: "
-                                    + ", ".join(
-                                        f"{k}={v!r}" for k, v in _params.items()
-                                    )
-                                )
+                            exc.add_note(
+                                "Test parameters: "
+                                + ", ".join(f"{k}={v!r}" for k, v in _params.items())
+                            )
                             raise
 
                 if param.skip is not None:
@@ -84,15 +77,10 @@ class ParametrizedTestCase(TestCase):
 
                 test.__name__ = f"{name}_{param.id}"
                 test.__qualname__ = f"{test.__qualname__}_{param.id}"
-                if sys.version_info >= (3, 11):
-                    test.__code__ = test.__code__.replace(  # type: ignore[attr-defined]
-                        co_name=test.__name__,
-                        co_qualname=test.__qualname__,
-                    )
-                else:
-                    test.__code__ = test.__code__.replace(  # type: ignore[attr-defined]
-                        co_name=test.__name__
-                    )
+                test.__code__ = test.__code__.replace(  # type: ignore[attr-defined]
+                    co_name=test.__name__,
+                    co_qualname=test.__qualname__,
+                )
 
                 if hasattr(cls, test.__name__):
                     raise ValueError(

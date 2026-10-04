@@ -288,10 +288,9 @@ def test_parametrized_failure_has_note():
     result = run_tests(SquareTests)
 
     assert len(result.failures) == 1
-    if sys.version_info >= (3, 11):
-        failure = result.failures[0]
-        *_, message = failure
-        assert message.endswith("\nTest parameters: x=1, expected=2\n")
+    failure = result.failures[0]
+    *_, message = failure
+    assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
 def test_parametrized_async_failure_has_note():
@@ -307,10 +306,9 @@ def test_parametrized_async_failure_has_note():
     result = run_tests(SquareTests)
 
     assert len(result.failures) == 1
-    if sys.version_info >= (3, 11):
-        failure = result.failures[0]
-        *_, message = failure
-        assert message.endswith("\nTest parameters: x=1, expected=2\n")
+    failure = result.failures[0]
+    *_, message = failure
+    assert message.endswith("\nTest parameters: x=1, expected=2\n")
 
 
 def test_single_parametrized():
@@ -782,8 +780,7 @@ def test_parametrized_code_object_names():
 
     func = SquareTests.test_square_0  # type: ignore[attr-defined]
     assert func.__code__.co_name == "test_square_0"
-    if sys.version_info >= (3, 11):
-        assert func.__code__.co_qualname == func.__qualname__
+    assert func.__code__.co_qualname == func.__qualname__
 
 
 def test_parametrized_code_object_names_async():
@@ -794,8 +791,7 @@ def test_parametrized_code_object_names_async():
 
     func = SquareTests.test_square_1  # type: ignore[attr-defined]
     assert func.__code__.co_name == "test_square_1"
-    if sys.version_info >= (3, 11):
-        assert func.__code__.co_qualname == func.__qualname__
+    assert func.__code__.co_qualname == func.__qualname__
 
 
 def test_parametrized_test_resolvable_from_frame():
